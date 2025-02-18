@@ -14,15 +14,18 @@
 // コントローラーとの通信処理
 namespace bluetooth_communication
 {
-    // https://www.uuidgenerator.net/
+    // uuid生成: https://www.uuidgenerator.net/
     constexpr const char *SERVICE_UUID = "0a133f79-efe1-40c5-b4a5-cba5980d0d0f";
     constexpr const char *TX_CHARACTERISTIC_UUID = "7687561d-1dba-458f-9fb2-58e6b85208ef";
     constexpr const char *RX_CHARACTERISTIC_UUID = "8c83ffae-8421-4581-9755-10c5efd53d10";
+
+    constexpr const u_int8_t JOYSTICK_RESEND_RATE = 10;
 
     BluetoothCommunicator::BluetoothCommunicator() : device_connected(false), p_server(nullptr), p_tx_characteristic(nullptr), p_rx_characteristic(nullptr), joystick_l_input(joystick_input::JoystickInput()), joystick_r_input(joystick_input::JoystickInput())
     {
     }
 
+    /// @brief セットアップ
     void BluetoothCommunicator::setup()
     {
         class ServerCallbacks : public BLEServerCallbacks
@@ -95,6 +98,7 @@ namespace bluetooth_communication
         p_advertising->start();
     }
 
+    /// @brief メインループ
     void BluetoothCommunicator::loop()
     {
         // 接続中
@@ -110,6 +114,8 @@ namespace bluetooth_communication
         delay(10);
     }
 
+    /// @brief bluetooth通信の接続時
+    /// @param p_server BLEサーバへのポインタ
     void BluetoothCommunicator::onConnect(BLEServer *p_server)
     {
         Serial.println("connected!");
@@ -128,6 +134,8 @@ namespace bluetooth_communication
         device_connected = true;
     }
 
+    /// @brief bluetooth通信の切断時
+    /// @param p_server BLEサーバへのポインタ
     void BluetoothCommunicator::onDisconnect(BLEServer *p_server)
     {
         Serial.println("disconnected!");
@@ -146,6 +154,8 @@ namespace bluetooth_communication
         device_connected = false;
     }
 
+    /// @brief bluetooth通信の受信時
+    /// @param p_characteristic 受信したCharacteristic
     void BluetoothCommunicator::onWrite(BLECharacteristic *p_characteristic)
     {
         // 受信データを処理
@@ -166,30 +176,74 @@ namespace bluetooth_communication
             remote_print("error: invalid side");
         }
 
-        // ジョイスティックの入力をそのままモニターに送信
-        if (p_tx_characteristic == nullptr)
+        // ジョイスティックの入力をモニターにそのまま送信(バッファの圧迫を防ぐため、一定確率で)
+        if (random(100) <= JOYSTICK_RESEND_RATE)
         {
-            return;
+            if (p_tx_characteristic == nullptr)
+            {
+                Serial.println("error: tx_characteristic is null");
+                return;
+            }
+            JsonDocument doc;
+            doc["type"] = "joystickInput";
+            doc["side"] = side;
+            doc["x"] = joystick_input.get_input()->x;
+            doc["y"] = joystick_input.get_input()->y;
+            doc["leveledX"] = joystick_input.get_leveled_input()->x;
+            doc["leveledY"] = joystick_input.get_leveled_input()->y;
+            doc["distance"] = joystick_input.get_distance();
+            doc["angle"] = joystick_input.get_angle();
+            String tx_buf;
+            serializeJson(doc, tx_buf);
+            p_tx_characteristic->setValue(tx_buf.c_str());
+            p_tx_characteristic->notify();
         }
-        p_tx_characteristic->setValue(rx_buf.c_str());
-        p_tx_characteristic->notify();
     }
 
+    /// @brief モニターのコンソールにテキストを送信
+    /// @param text 送信するテキスト
     void BluetoothCommunicator::remote_print(String text)
     {
         if (p_tx_characteristic == nullptr)
         {
+            Serial.println("error: tx_characteristic is null");
             return;
         }
 
         JsonDocument doc;
-        doc["nextLine"] = text;
+        doc["type"] = "print";
+        doc["text"] = text;
         String tx_json_string;
         serializeJson(doc, tx_json_string);
         p_tx_characteristic->setValue(tx_json_string.c_str());
         p_tx_characteristic->notify();
     }
 
+    /// @brief モニターにモータのフィードバック値を送信
+    void BluetoothCommunicator::remote_send_m3508_feedback(float angle, int16_t rpm, int16_t amp, uint8_t temp)
+    {
+        if (p_tx_characteristic == nullptr)
+        {
+            Serial.println("error: tx_characteristic is null");
+            return;
+        }
+
+        JsonDocument doc;
+        doc["type"] = "m3508Feedback";
+        doc["angle"] = angle;
+        doc["rpm"] = rpm;
+        doc["amp"] = amp;
+        doc["temp"] = temp;
+        String tx_json_string;
+        serializeJson(doc, tx_json_string);
+        p_tx_characteristic->setValue(tx_json_string.c_str());
+        p_tx_characteristic->notify();
+    }
+
+    /// @brief ジョイスティック入力のjsonをパース
+    /// @param json_string bluetoothで受信したjson文字列
+    /// @param side bluetoothで受信したジョイスティックの左右を代入
+    /// @return ジョイスティックの入力値
     joystick_input::JoystickInput BluetoothCommunicator::parse_json_of_joystick_input(String json_string, String *side)
     {
         JsonDocument doc;
@@ -209,28 +263,6 @@ namespace bluetooth_communication
             leveled_input,
             distance,
             angle);
-    }
-
-    String BluetoothCommunicator::create_json_of_joystick_input(
-        uint8_t side,
-        float x,
-        float y,
-        float leveled_x,
-        float leveled_y,
-        float distance,
-        float angle)
-    {
-        JsonDocument doc;
-        doc["side"] = side;
-        doc["x"] = x;
-        doc["y"] = y;
-        doc["leveledX"] = leveled_x;
-        doc["leveledY"] = leveled_y;
-        doc["distance"] = distance;
-        doc["angle"] = angle;
-        String json_string;
-        serializeJson(doc, json_string);
-        return json_string;
     }
 
 }

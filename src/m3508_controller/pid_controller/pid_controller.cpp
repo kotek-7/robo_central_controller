@@ -11,10 +11,9 @@ namespace m3508_controller::pid_controller
     /// @param kd dゲイン
     /// @param clamping_output 最大出力(積分器のanti-windup用)
     /// @param interval update_output()の実行間隔
-    PIDController::PIDController(const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval)
-        : kp(kp), ki(ki), kd(kd), clamping_output(clamping_output), interval(interval)
+    PIDController::PIDController(const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval, std::function<void(String)> remote_print)
+        : kp(kp), ki(ki), kd(kd), clamping_output(clamping_output), interval(interval), remote_print(remote_print), count(0), integral(0), previous_error(0), target_rpm(0), angle(0), rpm(0), amp(0), temp(0)
     {
-        count = 0;
     }
 
     /// @brief フィードバック値を設定
@@ -30,19 +29,14 @@ namespace m3508_controller::pid_controller
         this->temp = temp;
         if (count % debug_print_cycle == 0)
         {
-            Serial.print("Received: \n");
-            Serial.print("angle: ");
-            Serial.print(angle);
-            Serial.print(", ");
-            Serial.print("rpm: ");
-            Serial.print(rpm);
-            Serial.print(", ");
-            Serial.print("amp: ");
-            Serial.print(amp);
-            Serial.print(", ");
-            Serial.print("temp: ");
-            Serial.print(temp);
+            Serial.println("Received: ");
+            Serial.print("angle: " + String(angle) + "°,");
+            Serial.print("rpm: " + String(rpm) + "rpm, ");
+            Serial.print("amp: " + String(amp) + "mA, ");
+            Serial.print("temp: " + String(temp) + "℃");
             Serial.print("\n\n");
+            remote_print("Received: ");
+            remote_print("angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) + "mA, temp: " + String(temp) + "deg C");
         }
     }
 
@@ -71,28 +65,16 @@ namespace m3508_controller::pid_controller
         if (count % debug_print_cycle == 0)
         {
             Serial.print("Sent: \n");
-            Serial.print("output: ");
-            Serial.print(clamped_output);
-            Serial.print("mA, ");
-            Serial.print("p: ");
-            Serial.print(kp * current_error);
-            Serial.print(", ");
-            Serial.print("i: ");
-            Serial.print(ki * integral);
-            Serial.print(", ");
-            Serial.print("d: ");
-            Serial.print(kd * derivative);
-            Serial.print(", ");
-            Serial.print("current rpm: ");
-            Serial.print(rpm);
-            Serial.print("rpm, ");
-            Serial.print("target rpm: ");
-            Serial.print(target_rpm);
-            Serial.print("rpm, ");
-            Serial.print("error: ");
-            Serial.print(current_error);
-            Serial.print("rpm, ");
+            Serial.print("output: " + String(clamped_output) + "mA, ");
+            Serial.print("p: " + String(kp * current_error) + ", ");
+            Serial.print("i: " + String(ki * integral) + ", ");
+            Serial.print("d: " + String(kd * derivative) + ", ");
+            Serial.print("current rpm: " + String(rpm) + "rpm, ");
+            Serial.print("target rpm: " + String(target_rpm) + "rpm, ");
+            Serial.print("error: " + String(current_error) + "rpm, ");
             Serial.print("\n\n");
+            remote_print("Sent: ");
+            remote_print("output: " + String(clamped_output) + "mA, p: " + String(kp * current_error) + ", i: " + String(ki * integral) + ", d: " + String(kd * derivative) + ", current rpm: " + String(rpm) + "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm");
         }
 
         previous_error = current_error;

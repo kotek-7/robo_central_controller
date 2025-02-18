@@ -1,6 +1,7 @@
 #pragma once
 
 namespace utils {
+    /// @brief 2次元ベクトル
     class Vec2
     {
     public:
