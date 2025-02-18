@@ -2,11 +2,9 @@
 
 #include <Arduino.h>
 
-namespace m3508_controller::pid_controller
-{
+namespace m3508_controller::pid_controller {
     /// @brief PID制御を行う。フィードバック値を保持し、出力値を計算する。
-    class PIDController
-    {
+    class PIDController {
     private:
         /// @brief PID制御のpゲイン
         const float kp;
@@ -39,7 +37,8 @@ namespace m3508_controller::pid_controller
         std::function<void(String)> remote_print;
 
     public:
-        PIDController(const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval, std::function<void(String)> remote_print);
+        PIDController(const float kp, const float ki, const float kd, const float clamping_output,
+                      const uint32_t interval, std::function<void(String)> remote_print);
 
         void set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp);
 
@@ -48,4 +47,4 @@ namespace m3508_controller::pid_controller
         float update_output();
     };
 
-}
+} // namespace m3508_controller::pid_controller

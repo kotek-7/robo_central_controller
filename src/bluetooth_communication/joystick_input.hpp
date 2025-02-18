@@ -2,18 +2,16 @@
 
 #include "utils/vec2.hpp"
 
-namespace bluetooth_communication::joystick_input
-{
+namespace bluetooth_communication::joystick_input {
 
     /// @brief ジョイスティックの入力を保持する。
-    class JoystickInput
-    {
+    class JoystickInput {
     public:
         JoystickInput(utils::Vec2 input, utils::Vec2 leveled_input, float distance, float angle);
         JoystickInput();
 
-        const utils::Vec2* get_input() const { return &input; };
-        const utils::Vec2* get_leveled_input() const { return &leveled_input; };
+        const utils::Vec2 *get_input() const { return &input; };
+        const utils::Vec2 *get_leveled_input() const { return &leveled_input; };
         float get_distance() const { return distance; };
         float get_angle() const { return angle; };
 
@@ -29,4 +27,4 @@ namespace bluetooth_communication::joystick_input
         float angle;
     };
 
-}
+} // namespace bluetooth_communication::joystick_input

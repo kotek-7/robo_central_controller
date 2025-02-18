@@ -2,8 +2,7 @@
 
 namespace utils {
     /// @brief 2次元ベクトル
-    class Vec2
-    {
+    class Vec2 {
     public:
         float x;
         float y;
@@ -20,4 +19,4 @@ namespace utils {
         float length() const;
         Vec2 normalized() const;
     };
-}
+} // namespace utils

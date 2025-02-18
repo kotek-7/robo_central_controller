@@ -1,16 +1,14 @@
 #pragma once
 
-#include <Arduino.h>
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <BLE2902.h>
 #include "joystick_input.hpp"
+#include <Arduino.h>
+#include <BLE2902.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
 
-namespace bluetooth_communication
-{
-    class BluetoothCommunicator
-    {
+namespace bluetooth_communication {
+    class BluetoothCommunicator {
     public:
         BluetoothCommunicator();
         void setup();
@@ -43,4 +41,4 @@ namespace bluetooth_communication
         void onWrite(BLECharacteristic *pCharacteristic);
         joystick_input::JoystickInput parse_json_of_joystick_input(String json_string, String *side);
     };
-}
+} // namespace bluetooth_communication

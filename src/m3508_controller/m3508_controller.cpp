@@ -1,11 +1,10 @@
+#include "m3508_controller.hpp"
+#include "pid_controller/pid_controller.hpp"
 #include <Arduino.h>
 #include <ESP32-TWAI-CAN.hpp>
-#include "pid_controller/pid_controller.hpp"
-#include "m3508_controller.hpp"
 
 // モータの制御処理
-namespace m3508_controller
-{
+namespace m3508_controller {
     constexpr uint8_t CAN_TX = 16;
     constexpr uint8_t CAN_RX = 4;
 
@@ -20,31 +19,24 @@ namespace m3508_controller
     constexpr float KD = 40;
     constexpr float CLAMPING_OUTPUT = 2000;
 
-    M3508Controller::M3508Controller(std::function<void(String)> remote_print, std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback)
-        : remote_print(remote_print),
-          remote_send_feedback(remote_send_feedback),
-          previous_can_send_millis(0),
-          previous_can_receive_millis(0),
-          previous_serial_read_millis(0)
-    {
-    }
+    M3508Controller::M3508Controller(
+        std::function<void(String)> remote_print,
+        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback)
+        : remote_print(remote_print), remote_send_feedback(remote_send_feedback), previous_can_send_millis(0),
+          previous_can_receive_millis(0), previous_serial_read_millis(0) {}
 
     /// @brief セットアップ
-    void M3508Controller::setup()
-    {
+    void M3508Controller::setup() {
         ESP32Can.setRxQueueSize(5);
         ESP32Can.setTxQueueSize(5);
 
         ESP32Can.setSpeed(ESP32Can.convertSpeed(500));
 
         ESP32Can.setPins(CAN_TX, CAN_RX);
-        if (ESP32Can.begin())
-        {
+        if (ESP32Can.begin()) {
             Serial.println("Init OK!");
             remote_print("Init OK!");
-        }
-        else
-        {
+        } else {
             Serial.println("Init Fail!");
             remote_print("Init Fail!");
         }
@@ -53,9 +45,9 @@ namespace m3508_controller
     }
 
     /// @brief メインループ
-    void M3508Controller::loop()
-    {
-        static pid_controller::PIDController pid_controller{KP, KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL, remote_print};
+    void M3508Controller::loop() {
+        static pid_controller::PIDController pid_controller{KP,          KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL,
+                                                            remote_print};
 
         /// @brief モータに送信する電流値(mA)
         static int32_t command_currents[4] = {0, 0, 0, 0};
@@ -64,8 +56,7 @@ namespace m3508_controller
         static uint32_t count;
 
         // CANで制御量を送信
-        if ((millis() - previous_can_send_millis) > CAN_SEND_INTERVAL)
-        {
+        if ((millis() - previous_can_send_millis) > CAN_SEND_INTERVAL) {
             command_currents[0] = pid_controller.update_output();
             uint8_t tx_buf[8];
             milli_amperes_to_bytes(command_currents, tx_buf);
@@ -88,11 +79,9 @@ namespace m3508_controller
         }
 
         // CANでフィードバック値を受信
-        if ((millis() - previous_can_receive_millis) > CAN_RECEIVE_INTERVAL)
-        {
+        if ((millis() - previous_can_receive_millis) > CAN_RECEIVE_INTERVAL) {
             CanFrame rx_frame;
-            if (ESP32Can.readFrame(rx_frame, 1000))
-            {
+            if (ESP32Can.readFrame(rx_frame, 1000)) {
                 uint32_t rx_id = rx_frame.identifier;
 
                 uint32_t controller_id = rx_id - 0x200;
@@ -110,14 +99,11 @@ namespace m3508_controller
         }
 
         // シリアル通信で制御目標値を受信
-        if ((millis() - previous_serial_read_millis) > SERIAL_READ_INTERVAL)
-        {
-            if (Serial.available())
-            {
+        if ((millis() - previous_serial_read_millis) > SERIAL_READ_INTERVAL) {
+            if (Serial.available()) {
                 delay(1); // 一連のシリアル信号をすべて受信するまで待つ
                 String input_string = "";
-                while (Serial.available() > 0)
-                {
+                while (Serial.available() > 0) {
                     char input_char = Serial.read();
                     input_string.concat(input_char);
                 }
@@ -133,13 +119,12 @@ namespace m3508_controller
     }
 
     /// @brief 4つの電流値を、CANで速度コントローラに送信するデータへ変換
-    /// @param milli_amperes 4つの-20000\~20000の電流値(mA)を格納した配列 (要素番号と速度コントローラIDが対応)
+    /// @param milli_amperes 4つの-20000\~20000の電流値(mA)を格納した配列
+    /// (要素番号と速度コントローラIDが対応)
     /// @param out_tx_buf 結果の書き込み用配列
-    void M3508Controller::milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8])
-    {
+    void M3508Controller::milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]) {
         uint8_t i;
-        for (i = 0; i < 4; i++)
-        {
+        for (i = 0; i < 4; i++) {
             int32_t milli_ampere = milli_amperes[i] * 16384 / 20000;
             uint8_t upper = (milli_ampere >> 8) & 0xFF;
             uint8_t lower = milli_ampere & 0xFF;
@@ -154,11 +139,11 @@ namespace m3508_controller
     /// @param out_rpm 回転速度(rpm) (結果書き込み)
     /// @param out_amp 実際のトルク電流(?) (結果書き込み用)
     /// @param out_temp モータの温度(℃) (結果書き込み用)
-    void M3508Controller::derive_feedback_fields(const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp)
-    {
+    void M3508Controller::derive_feedback_fields(const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm,
+                                                 int16_t *out_amp, uint8_t *out_temp) {
         *out_angle = (float)(rx_buf[0] << 8 | rx_buf[1]) * 360.0f / 8191.0f;
         *out_rpm = rx_buf[2] << 8 | rx_buf[3];
         *out_amp = rx_buf[4] << 8 | rx_buf[5];
         *out_temp = rx_buf[6];
     }
-}
+} // namespace m3508_controller
