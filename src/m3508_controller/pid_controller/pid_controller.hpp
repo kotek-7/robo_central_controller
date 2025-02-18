@@ -37,8 +37,10 @@ namespace m3508_controller::pid_controller {
         std::function<void(String)> remote_print;
 
     public:
-        PIDController(const float kp, const float ki, const float kd, const float clamping_output,
-                      const uint32_t interval, std::function<void(String)> remote_print);
+        PIDController(
+            const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval,
+            std::function<void(String)> remote_print
+        );
 
         void set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp);
 

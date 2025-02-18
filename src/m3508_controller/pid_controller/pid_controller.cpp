@@ -10,8 +10,10 @@ namespace m3508_controller::pid_controller {
     /// @param kd dゲイン
     /// @param clamping_output 最大出力(積分器のanti-windup用)
     /// @param interval update_output()の実行間隔
-    PIDController::PIDController(const float kp, const float ki, const float kd, const float clamping_output,
-                                 const uint32_t interval, std::function<void(String)> remote_print)
+    PIDController::PIDController(
+        const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval,
+        std::function<void(String)> remote_print
+    )
         : kp(kp), ki(ki), kd(kd), clamping_output(clamping_output), interval(interval), remote_print(remote_print),
           count(0), integral(0), previous_error(0), target_rpm(0), angle(0), rpm(0), amp(0), temp(0) {}
 
@@ -20,8 +22,8 @@ namespace m3508_controller::pid_controller {
     /// @param rpm モータの現在の回転数(rpm)
     /// @param amp モータに現在実際に流れている電流量(mA)
     /// @param temp モータの現在の温度(℃)
-    void PIDController::set_feedback_values(const float angle, const int16_t rpm, const int16_t amp,
-                                            const uint8_t temp) {
+    void
+    PIDController::set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp) {
         this->angle = angle;
         this->rpm = rpm;
         this->amp = amp;
@@ -34,8 +36,10 @@ namespace m3508_controller::pid_controller {
             Serial.print("temp: " + String(temp) + "℃");
             Serial.print("\n\n");
             remote_print("Received: ");
-            remote_print("angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
-                         "mA, temp: " + String(temp) + "deg C");
+            remote_print(
+                "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
+                "mA, temp: " + String(temp) + "deg C"
+            );
         }
     }
 
@@ -67,9 +71,11 @@ namespace m3508_controller::pid_controller {
             Serial.print("error: " + String(current_error) + "rpm, ");
             Serial.print("\n\n");
             remote_print("Sent: ");
-            remote_print("output: " + String(clamped_output) + "mA, p: " + String(kp * current_error) + ", i: " +
-                         String(ki * integral) + ", d: " + String(kd * derivative) + ", current rpm: " + String(rpm) +
-                         "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm");
+            remote_print(
+                "output: " + String(clamped_output) + "mA, p: " + String(kp * current_error) +
+                ", i: " + String(ki * integral) + ", d: " + String(kd * derivative) + ", current rpm: " + String(rpm) +
+                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm"
+            );
         }
 
         previous_error = current_error;

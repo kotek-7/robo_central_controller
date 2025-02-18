@@ -59,7 +59,8 @@ namespace bluetooth_communication {
         // 送信用Characteristicを作成
         {
             p_tx_characteristic = p_service->createCharacteristic(
-                TX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+                TX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
+            );
             p_tx_characteristic->setCallbacks(new TxCharacteristicCallbacks());
 
             // Client Characteristc Configuration Descriptor
@@ -210,8 +211,8 @@ namespace bluetooth_communication {
     /// @param json_string bluetoothで受信したjson文字列
     /// @param side bluetoothで受信したジョイスティックの左右を代入
     /// @return ジョイスティックの入力値
-    joystick_input::JoystickInput BluetoothCommunicator::parse_json_of_joystick_input(String json_string,
-                                                                                      String *side) {
+    joystick_input::JoystickInput
+    BluetoothCommunicator::parse_json_of_joystick_input(String json_string, String *side) {
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, json_string);
         if (error) {

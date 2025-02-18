@@ -7,7 +7,8 @@ auto p_m3508_controller = new m3508_controller::M3508Controller(
     [](String text) { p_bluetooth_communicator->remote_print(text); },
     [](float angle, int16_t rpm, int16_t amp, uint8_t temp) {
         p_bluetooth_communicator->remote_send_m3508_feedback(angle, rpm, amp, temp);
-    });
+    }
+);
 
 void setup() {
     try {

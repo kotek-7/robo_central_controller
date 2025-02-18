@@ -21,7 +21,8 @@ namespace m3508_controller {
 
     M3508Controller::M3508Controller(
         std::function<void(String)> remote_print,
-        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback)
+        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback
+    )
         : remote_print(remote_print), remote_send_feedback(remote_send_feedback), previous_can_send_millis(0),
           previous_can_receive_millis(0), previous_serial_read_millis(0) {}
 
@@ -46,8 +47,9 @@ namespace m3508_controller {
 
     /// @brief メインループ
     void M3508Controller::loop() {
-        static pid_controller::PIDController pid_controller{KP,          KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL,
-                                                            remote_print};
+        static pid_controller::PIDController pid_controller{
+            KP, KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL, remote_print
+        };
 
         /// @brief モータに送信する電流値(mA)
         static int32_t command_currents[4] = {0, 0, 0, 0};
@@ -139,8 +141,9 @@ namespace m3508_controller {
     /// @param out_rpm 回転速度(rpm) (結果書き込み)
     /// @param out_amp 実際のトルク電流(?) (結果書き込み用)
     /// @param out_temp モータの温度(℃) (結果書き込み用)
-    void M3508Controller::derive_feedback_fields(const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm,
-                                                 int16_t *out_amp, uint8_t *out_temp) {
+    void M3508Controller::derive_feedback_fields(
+        const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp
+    ) {
         *out_angle = (float)(rx_buf[0] << 8 | rx_buf[1]) * 360.0f / 8191.0f;
         *out_rpm = rx_buf[2] << 8 | rx_buf[3];
         *out_amp = rx_buf[4] << 8 | rx_buf[5];

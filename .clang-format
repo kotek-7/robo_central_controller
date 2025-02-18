@@ -7,4 +7,5 @@ IndentCaseLabels: false
 ColumnLimit: 120
 AccessModifierOffset: -4
 NamespaceIndentation: All
-ixNamespaceComments: false
+AlignAfterOpenBracket: BlockIndent
+BinPackArguments: false
