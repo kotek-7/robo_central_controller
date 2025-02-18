@@ -153,5 +153,4 @@ namespace m3508_controller
         *out_amp = rx_buf[4] << 8 | rx_buf[5];
         *out_temp = rx_buf[6];
     }
-
 }
