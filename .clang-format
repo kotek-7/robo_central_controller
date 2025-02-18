@@ -9,3 +9,4 @@ AccessModifierOffset: -4
 NamespaceIndentation: All
 AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
+PackConstructorInitializers: NextLine

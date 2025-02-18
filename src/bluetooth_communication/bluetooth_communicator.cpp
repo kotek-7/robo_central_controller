@@ -21,8 +21,12 @@ namespace bluetooth_communication {
     constexpr const u_int8_t JOYSTICK_RESEND_RATE = 10;
 
     BluetoothCommunicator::BluetoothCommunicator()
-        : device_connected(false), p_server(nullptr), p_tx_characteristic(nullptr), p_rx_characteristic(nullptr),
-          joystick_l_input(joystick_input::JoystickInput()), joystick_r_input(joystick_input::JoystickInput()) {}
+        : device_connected(false),
+          p_server(nullptr),
+          p_tx_characteristic(nullptr),
+          p_rx_characteristic(nullptr),
+          joystick_l_input(joystick_input::JoystickInput()),
+          joystick_r_input(joystick_input::JoystickInput()) {}
 
     /// @brief セットアップ
     void BluetoothCommunicator::setup() {

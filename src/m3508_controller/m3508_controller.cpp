@@ -23,8 +23,11 @@ namespace m3508_controller {
         std::function<void(String)> remote_print,
         std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback
     )
-        : remote_print(remote_print), remote_send_feedback(remote_send_feedback), previous_can_send_millis(0),
-          previous_can_receive_millis(0), previous_serial_read_millis(0) {}
+        : remote_print(remote_print),
+          remote_send_feedback(remote_send_feedback),
+          previous_can_send_millis(0),
+          previous_can_receive_millis(0),
+          previous_serial_read_millis(0) {}
 
     /// @brief セットアップ
     void M3508Controller::setup() {

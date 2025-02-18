@@ -14,8 +14,20 @@ namespace m3508_controller::pid_controller {
         const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval,
         std::function<void(String)> remote_print
     )
-        : kp(kp), ki(ki), kd(kd), clamping_output(clamping_output), interval(interval), remote_print(remote_print),
-          count(0), integral(0), previous_error(0), target_rpm(0), angle(0), rpm(0), amp(0), temp(0) {}
+        : kp(kp),
+          ki(ki),
+          kd(kd),
+          clamping_output(clamping_output),
+          interval(interval),
+          remote_print(remote_print),
+          count(0),
+          integral(0),
+          previous_error(0),
+          target_rpm(0),
+          angle(0),
+          rpm(0),
+          amp(0),
+          temp(0) {}
 
     /// @brief フィードバック値を設定
     /// @param angle モータの現在の角度(°)
