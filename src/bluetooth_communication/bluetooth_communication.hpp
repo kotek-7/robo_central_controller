@@ -6,7 +6,7 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 
-namespace robo_controller
+namespace bluetooth_communication
 {
     class ServerCallbacks : public BLEServerCallbacks
     {
@@ -28,7 +28,7 @@ namespace robo_controller
     void setup();
     void loop();
 
-    void parseRxJsonData(
+    void parse_rx_json_data(
         String jsonString,
         uint8_t *side,
         float *x,
@@ -38,7 +38,7 @@ namespace robo_controller
         float *distance,
         float *angle);
 
-    String createTxJsonData(
+    String create_tx_json_data(
         uint8_t side,
         float x,
         float y,
@@ -47,5 +47,5 @@ namespace robo_controller
         float distance,
         float angle);
 
-    void remotePrint(String text);
+    void remote_print(String text);
 }

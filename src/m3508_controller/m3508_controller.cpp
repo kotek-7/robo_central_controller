@@ -25,13 +25,14 @@ namespace m3508_controller
     /// @brief 前回のシリアル受信時間
     uint32_t previous_serial_read_millis;
 
+    void milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]);
+    void derive_feedback_fields(const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp);
+
     void setup()
     {
-        pinMode(13, OUTPUT);
-        Serial.begin(115200);
-
         ESP32Can.setRxQueueSize(5);
         ESP32Can.setTxQueueSize(5);
+
         ESP32Can.setSpeed(ESP32Can.convertSpeed(500));
 
         ESP32Can.setPins(CAN_TX, CAN_RX);
@@ -120,8 +121,6 @@ namespace m3508_controller
             }
             previous_serial_read_millis = millis();
         }
-
-        digitalWrite(13, HIGH);
         count++;
     }
 
