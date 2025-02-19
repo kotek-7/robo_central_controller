@@ -19,11 +19,17 @@ namespace m3508_controller {
     constexpr float KD = 40;
     constexpr float CLAMPING_OUTPUT = 2000;
 
+    /// @param remote_print モニタにテキストを送信する関数
+    /// @param remote_send_feedback モニタにフィードバック値を送信する関数
+    /// @param remote_send_pid_fields モニタにPID制御値を送信する関数
     M3508Controller::M3508Controller(
         std::function<void(String)> remote_print,
-        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback
+        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback,
+        std::function<void(float output, float p, float i, float d, float target_rpm, float error)>
+            remote_send_pid_fields
     )
-        : remote_print(remote_print),
+        : pid_controller(KP, KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL, remote_print, remote_send_pid_fields),
+          remote_print(remote_print),
           remote_send_feedback(remote_send_feedback),
           previous_can_send_millis(0),
           previous_can_receive_millis(0),
@@ -34,7 +40,7 @@ namespace m3508_controller {
         ESP32Can.setRxQueueSize(5);
         ESP32Can.setTxQueueSize(5);
 
-        ESP32Can.setSpeed(ESP32Can.convertSpeed(500));
+        ESP32Can.setSpeed(ESP32Can.convertSpeed(1000));
 
         ESP32Can.setPins(CAN_TX, CAN_RX);
         if (ESP32Can.begin()) {
@@ -50,21 +56,22 @@ namespace m3508_controller {
 
     /// @brief メインループ
     void M3508Controller::loop() {
-        static pid_controller::PIDController pid_controller{
-            KP, KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL, remote_print
-        };
-
         /// @brief モータに送信する電流値(mA)
         static int32_t command_currents[4] = {0, 0, 0, 0};
-
-        /// @brief loop()の実行回数
-        static uint32_t count;
 
         // CANで制御量を送信
         if ((millis() - previous_can_send_millis) > CAN_SEND_INTERVAL) {
             command_currents[0] = pid_controller.update_output();
             uint8_t tx_buf[8];
             milli_amperes_to_bytes(command_currents, tx_buf);
+
+            Serial.println("Sending: ");
+            for (byte i = 0; i < 8; i++) {
+                char msg_string[128];
+                sprintf(msg_string, " 0x%.2X", tx_buf[i]);
+                Serial.print(msg_string);
+            }
+            Serial.println();
 
             CanFrame tx_frame;
             tx_frame.identifier = CAN_ID;
@@ -78,15 +85,24 @@ namespace m3508_controller {
             tx_frame.data[5] = tx_buf[5];
             tx_frame.data[6] = tx_buf[6];
             tx_frame.data[7] = tx_buf[7];
-            ESP32Can.writeFrame(tx_frame);
+            bool writeFrameOk = ESP32Can.writeFrame(tx_frame);
+
+            Serial.println("Sent! result:" + String(writeFrameOk));
+            for (uint8_t i = 0; i < 8; i++) {
+                Serial.print(tx_frame.data[i]);
+                Serial.print(" ");
+            }
+            Serial.println();
 
             previous_can_send_millis = millis();
         }
 
         // CANでフィードバック値を受信
         if ((millis() - previous_can_receive_millis) > CAN_RECEIVE_INTERVAL) {
+            Serial.println("Checking for can received buf!");
             CanFrame rx_frame;
-            if (ESP32Can.readFrame(rx_frame, 1000)) {
+            if (ESP32Can.readFrame(rx_frame, 0)) {
+                Serial.println("Can frame received!");
                 uint32_t rx_id = rx_frame.identifier;
 
                 uint32_t controller_id = rx_id - 0x200;
@@ -96,8 +112,16 @@ namespace m3508_controller {
                 uint8_t temp;
                 derive_feedback_fields(rx_frame.data, &angle, &rpm, &amp, &temp);
 
+                Serial.println("Angle: " + String(angle));
+                Serial.println("Rpm: " + String(rpm));
+                Serial.println("Amp: " + String(amp));
+                Serial.println("Temp: " + String(temp));
+                remote_print("Received!");
+
                 remote_send_feedback(angle, rpm, amp, temp);
                 pid_controller.set_feedback_values(angle, rpm, amp, temp);
+            } else {
+                Serial.println("No frame received!");
             }
 
             previous_can_receive_millis = millis();
@@ -120,7 +144,6 @@ namespace m3508_controller {
             }
             previous_serial_read_millis = millis();
         }
-        count++;
     }
 
     /// @brief 4つの電流値を、CANで速度コントローラに送信するデータへ変換

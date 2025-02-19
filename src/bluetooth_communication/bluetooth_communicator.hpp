@@ -19,8 +19,10 @@ namespace bluetooth_communication {
         /// @brief 右のジョイスティック入力を取得
         /// @return 右のジョイスティック入力
         joystick_input::JoystickInput get_joystick_r_input() const { return joystick_r_input; }
+
         void remote_print(String text);
         void remote_send_m3508_feedback(float angle, int16_t rpm, int16_t amp, uint8_t temp);
+        void remote_send_m3508_pid_fields(float output, float p, float i, float d, float target_rpm, float error);
 
     private:
         /// @brief bluetoothデバイスが(1つ以上)接続されているか
@@ -36,9 +38,10 @@ namespace bluetooth_communication {
         /// @brief 右のジョイスティック入力
         joystick_input::JoystickInput joystick_r_input;
 
-        void onConnect(BLEServer *pServer);
-        void onDisconnect(BLEServer *pServer);
-        void onWrite(BLECharacteristic *pCharacteristic);
+        void on_connect(BLEServer *p_server);
+        void on_disconnect(BLEServer *p_server);
+        void on_write(BLECharacteristic *p_characteristic);
+        void remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side);
         joystick_input::JoystickInput parse_json_of_joystick_input(String json_string, String *side);
     };
 } // namespace bluetooth_communication

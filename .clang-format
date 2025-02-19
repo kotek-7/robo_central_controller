@@ -10,3 +10,4 @@ NamespaceIndentation: All
 AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
 PackConstructorInitializers: NextLine
+PenaltyReturnTypeOnItsOwnLine: 0

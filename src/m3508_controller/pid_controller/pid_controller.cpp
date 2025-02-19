@@ -2,17 +2,19 @@
 #include <Arduino.h>
 
 namespace m3508_controller::pid_controller {
-    constexpr uint8_t debug_print_cycle = 10;
+    /// @brief pid値のデバッグ出力の間隔(ループ回数)
+    constexpr uint8_t DEBUG_PRINT_INTERVAL = 10;
 
     /// @brief PIDControllerクラスのコンストラクタ
     /// @param kp pゲイン
     /// @param ki iゲイン
     /// @param kd dゲイン
     /// @param clamping_output 最大出力(積分器のanti-windup用)
-    /// @param interval update_output()の実行間隔
+    /// @param interval update_output()の実行間隔(dtとして計算に使うため)
     PIDController::PIDController(
         const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval,
-        std::function<void(String)> remote_print
+        std::function<void(String)> remote_print,
+        std::function<void(float output, float p, float i, float d, float target_rpm, float error)> remote_send_pid_fields
     )
         : kp(kp),
           ki(ki),
@@ -20,7 +22,7 @@ namespace m3508_controller::pid_controller {
           clamping_output(clamping_output),
           interval(interval),
           remote_print(remote_print),
-          count(0),
+          remote_send_pid_fields(remote_send_pid_fields),
           integral(0),
           previous_error(0),
           target_rpm(0),
@@ -36,11 +38,13 @@ namespace m3508_controller::pid_controller {
     /// @param temp モータの現在の温度(℃)
     void
     PIDController::set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp) {
+        static uint32_t count = 0;
+        count++;
         this->angle = angle;
         this->rpm = rpm;
         this->amp = amp;
         this->temp = temp;
-        if (count % debug_print_cycle == 0) {
+        if (count % DEBUG_PRINT_INTERVAL == 0) {
             Serial.println("Received: ");
             Serial.print("angle: " + String(angle) + "°,");
             Serial.print("rpm: " + String(rpm) + "rpm, ");
@@ -62,6 +66,9 @@ namespace m3508_controller::pid_controller {
     /// @brief 内部状態からPID出力値を計算し、内部状態を更新
     /// @return 出力値
     float PIDController::update_output() {
+        static uint32_t count = 0;
+        count++;
+
         float current_error = static_cast<float>(target_rpm - rpm);
         integral += current_error * static_cast<float>(interval);
         float derivative = (current_error - previous_error) / static_cast<float>(interval);
@@ -72,7 +79,7 @@ namespace m3508_controller::pid_controller {
             integral = 0;
         }
 
-        if (count % debug_print_cycle == 0) {
+        if (count % DEBUG_PRINT_INTERVAL == 0) {
             Serial.print("Sent: \n");
             Serial.print("output: " + String(clamped_output) + "mA, ");
             Serial.print("p: " + String(kp * current_error) + ", ");
@@ -89,10 +96,10 @@ namespace m3508_controller::pid_controller {
                 "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm"
             );
         }
+        remote_send_pid_fields(clamped_output, kp * current_error, ki * integral, kd * derivative, target_rpm, current_error);
 
         previous_error = current_error;
 
-        count++;
         return clamped_output;
     }
 }; // namespace m3508_controller::pid_controller
