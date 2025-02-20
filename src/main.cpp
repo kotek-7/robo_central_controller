@@ -4,7 +4,9 @@
 #include <Arduino.h>
 #include <memory>
 
+/// Bluetooth通信クラス
 std::unique_ptr<bt_communication::BtCommunicator> bt_communicator(new bt_communication::BtCommunicator());
+///  Bluetoothでいろいろやり取りする関数をまとめたクラス
 std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication::BtInterface(
     [](String text) { bt_communicator->remote_print(text); },
     [](float angle, int16_t rpm, int16_t amp, uint8_t temp) {
@@ -14,6 +16,7 @@ std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication
         bt_communicator->remote_send_m3508_pid_fields(output, p, i, d, target_rpm, error);
     }
 ));
+/// M3508モータの制御クラス
 std::unique_ptr<m3508_controller::M3508Controller> m3508_controller(new m3508_controller::M3508Controller(*bt_interface));
 
 void setup() {
