@@ -1,7 +1,7 @@
 // https://qiita.com/takudooon/items/2ab77f22196504ff9597
 // https://qiita.com/umi_kappa/items/dd3d7a27cf714971406e
 
-#include "bluetooth_communicator.hpp"
+#include "bt_communicator.hpp"
 #include "joystick_input.hpp"
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -11,7 +11,7 @@
 #include <BLEUtils.h>
 
 // コントローラーとの通信処理
-namespace bluetooth_communication {
+namespace bt_communication {
     // uuid生成: https://www.uuidgenerator.net/
     constexpr const char *SERVICE_UUID = "0a133f79-efe1-40c5-b4a5-cba5980d0d0f";
     constexpr const char *TX_CHARACTERISTIC_UUID = "7687561d-1dba-458f-9fb2-58e6b85208ef";
@@ -20,7 +20,7 @@ namespace bluetooth_communication {
     /// @brief ジョイスティック入力をモニターに転送する間隔(ループ回数)
     constexpr const u_int8_t JOYSTICK_INPUT_FORWARD_INTERVAL = 10;
 
-    BluetoothCommunicator::BluetoothCommunicator()
+    BtCommunicator::BtCommunicator()
         : device_connected(false),
           p_server(nullptr),
           p_tx_characteristic(nullptr),
@@ -29,29 +29,25 @@ namespace bluetooth_communication {
           joystick_r_input(joystick_input::JoystickInput()) {}
 
     /// @brief セットアップ
-    void BluetoothCommunicator::setup() {
+    void BtCommunicator::setup() {
         // BLEの初期化
         class ServerCallbacks : public BLEServerCallbacks {
         public:
-            BluetoothCommunicator *p_bluetooth_communicator;
+            BtCommunicator *p_bt_communicator;
 
-            ServerCallbacks(BluetoothCommunicator *p_bluetooth_communicator)
-                : p_bluetooth_communicator(p_bluetooth_communicator) {}
-            void onConnect(BLEServer *pServer) override { p_bluetooth_communicator->on_connect(pServer); }
-            void onDisconnect(BLEServer *pServer) override { p_bluetooth_communicator->on_disconnect(pServer); }
+            ServerCallbacks(BtCommunicator *p_bt_communicator) : p_bt_communicator(p_bt_communicator) {}
+            void onConnect(BLEServer *pServer) override { p_bt_communicator->on_connect(pServer); }
+            void onDisconnect(BLEServer *pServer) override { p_bt_communicator->on_disconnect(pServer); }
         };
 
         class TxCharacteristicCallbacks : public BLECharacteristicCallbacks {};
 
         class RxCharacteristicCallbacks : public BLECharacteristicCallbacks {
         public:
-            BluetoothCommunicator *p_bluetooth_communicator;
+            BtCommunicator *p_bt_communicator;
 
-            RxCharacteristicCallbacks(BluetoothCommunicator *p_bluetooth_communicator)
-                : p_bluetooth_communicator(p_bluetooth_communicator) {}
-            void onWrite(BLECharacteristic *pCharacteristic) override {
-                p_bluetooth_communicator->on_write(pCharacteristic);
-            }
+            RxCharacteristicCallbacks(BtCommunicator *p_bt_communicator) : p_bt_communicator(p_bt_communicator) {}
+            void onWrite(BLECharacteristic *pCharacteristic) override { p_bt_communicator->on_write(pCharacteristic); }
         };
 
         BLEDevice::init("esp32_for_BLE");
@@ -87,7 +83,7 @@ namespace bluetooth_communication {
     }
 
     /// @brief メインループ
-    void BluetoothCommunicator::loop() {
+    void BtCommunicator::loop() {
         // 接続中
         if (device_connected) {
             int random_num = random(255);
@@ -101,7 +97,7 @@ namespace bluetooth_communication {
 
     /// @brief bluetooth通信の接続時
     /// @param p_server BLEサーバへのポインタ
-    void BluetoothCommunicator::on_connect(BLEServer *p_server) {
+    void BtCommunicator::on_connect(BLEServer *p_server) {
         Serial.println("connected!");
         remote_print("conncted!");
 
@@ -120,7 +116,7 @@ namespace bluetooth_communication {
 
     /// @brief bluetooth通信の切断時
     /// @param p_server BLEサーバへのポインタ
-    void BluetoothCommunicator::on_disconnect(BLEServer *p_server) {
+    void BtCommunicator::on_disconnect(BLEServer *p_server) {
         Serial.println("disconnected!");
         remote_print("disconnected!");
 
@@ -139,7 +135,7 @@ namespace bluetooth_communication {
 
     /// @brief bluetooth通信の受信時
     /// @param p_characteristic 通信を受信したCharacteristic
-    void BluetoothCommunicator::on_write(BLECharacteristic *p_characteristic) {
+    void BtCommunicator::on_write(BLECharacteristic *p_characteristic) {
         static uint32_t count = 0;
         count++;
 
@@ -166,7 +162,7 @@ namespace bluetooth_communication {
 
     /// @brief モニターのコンソールにテキストを送信
     /// @param text 送信するテキスト
-    void BluetoothCommunicator::remote_print(String text) {
+    void BtCommunicator::remote_print(String text) {
         if (p_tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
@@ -182,7 +178,7 @@ namespace bluetooth_communication {
     }
 
     /// @brief モニターにモータのフィードバック値を送信
-    void BluetoothCommunicator::remote_send_m3508_feedback(float angle, int16_t rpm, int16_t amp, uint8_t temp) {
+    void BtCommunicator::remote_send_m3508_feedback(float angle, int16_t rpm, int16_t amp, uint8_t temp) {
         if (p_tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
@@ -201,7 +197,7 @@ namespace bluetooth_communication {
     }
 
     /// @brief モニターにモータのpid制御値を送信
-    void BluetoothCommunicator::remote_send_m3508_pid_fields(
+    void BtCommunicator::remote_send_m3508_pid_fields(
         float output, float p, float i, float d, float target_rpm, float error
     ) {
         if (p_tx_characteristic == nullptr) {
@@ -224,7 +220,7 @@ namespace bluetooth_communication {
     }
 
     /// @brief モニターにジョイスティックの入力値を転送
-    void BluetoothCommunicator::remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side) {
+    void BtCommunicator::remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side) {
         if (p_tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
@@ -249,8 +245,7 @@ namespace bluetooth_communication {
     /// @param json_string bluetoothで受信したjson文字列
     /// @param side bluetoothで受信したジョイスティックの左右を代入
     /// @return ジョイスティックの入力値
-    joystick_input::JoystickInput
-    BluetoothCommunicator::parse_json_of_joystick_input(String json_string, String *side) {
+    joystick_input::JoystickInput BtCommunicator::parse_json_of_joystick_input(String json_string, String *side) {
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, json_string);
         if (error) {
@@ -265,4 +260,4 @@ namespace bluetooth_communication {
         return joystick_input::JoystickInput(input, leveled_input, distance, angle);
     }
 
-} // namespace bluetooth_communication
+} // namespace bt_communication

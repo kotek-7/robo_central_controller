@@ -7,10 +7,10 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 
-namespace bluetooth_communication {
-    class BluetoothCommunicator {
+namespace bt_communication {
+    class BtCommunicator {
     public:
-        BluetoothCommunicator();
+        BtCommunicator();
         void setup();
         void loop();
         /// @brief 左のジョイスティック入力を取得
@@ -44,4 +44,4 @@ namespace bluetooth_communication {
         void remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side);
         joystick_input::JoystickInput parse_json_of_joystick_input(String json_string, String *side);
     };
-} // namespace bluetooth_communication
+} // namespace bt_communication

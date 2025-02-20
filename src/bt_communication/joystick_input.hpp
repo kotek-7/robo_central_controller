@@ -2,7 +2,7 @@
 
 #include "utils/vec2.hpp"
 
-namespace bluetooth_communication::joystick_input {
+namespace bt_communication::joystick_input {
 
     /// @brief ジョイスティックの入力を保持する。
     class JoystickInput {
@@ -27,4 +27,4 @@ namespace bluetooth_communication::joystick_input {
         float angle;
     };
 
-} // namespace bluetooth_communication::joystick_input
+} // namespace bt_communication::joystick_input
