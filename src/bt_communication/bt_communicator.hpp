@@ -11,17 +11,16 @@ namespace bt_communication {
     /// @brief Bluetooth通信を行うクラス
     /// @details
     ///     このクラスは、コントローラ・モニタとのBluetooth通信を行います。
-    ///     main.cpp内でsetup()関数を呼び出すことでBluetoothの初期化を行い、
-    ///     loop()関数を呼び出すことでBluetooth関連のループ処理を行います。
-    ///     コントローラのジョイスティック入力を取得し、保持します。
-    ///     また、モニタにデータを送信するための関数も提供します。
-    ///     BLE(Bluetooth Low Energy)の
+    ///
+    ///     BLE(Bluetooth Low Energy)でコントローラからのジョイスティック入力を自動で受け取り、保持します。
+    ///     また、モニタにBLEで各種データを送信するための関数も提供します。
+    ///
+    ///     使う前にsetup()を呼び出して初期化する必要があります。
     class BtCommunicator {
     public:
         BtCommunicator();
         ~BtCommunicator();
         void setup();
-        void loop();
 
         /// @brief Bluetoothデバイスが(1つ以上)接続されているか
         bool is_device_connected() const { return device_connected; }

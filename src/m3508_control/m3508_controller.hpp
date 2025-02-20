@@ -7,11 +7,14 @@ namespace m3508_control {
     /// @brief M3508モータの制御を行うクラス
     /// @details
     ///     M3508モータの制御を行うクラスです。
+    ///
+    ///     電流値をCANで送信するためのsend_currents()関数、
+    ///     CANでフィードバック値を読み取ってPID制御器にセットするためのread_and_set_feedback()関数、
+    ///     シリアル通信を読み取ってPID制御器の目標値にセットするためのread_serial_and_set_target_rpm()関数を提供します。
+    ///
+    ///     使う前にsetup()関数を呼び出して初期化する必要があります。
     ///     このクラスは、M3508モータの制御を行うために、内部にPID制御器(PIDControllerオブジェクト)を持ちます。
-    ///     また、Bluetoothでモニタに情報を送るためのBtInterfaceオブジェクトも持ちます。
-    ///     main.cpp内でsetup()関数を呼び出すことで初期化を行い、loop()関数を呼び出すことで制御を行います。
-    ///     M3508モータの角度、回転数、電流、温度を受信し、pid_controllerに渡します。
-    ///     また、pid_controllerから出力された値をM3508モータに送信します。
+    ///     また、Bluetoothでモニタに様々な情報を送るためのBtInterfaceオブジェクトも持ちます。
     class M3508Controller {
     public:
         M3508Controller(const bt_communication::BtInterface &bt_interface);
