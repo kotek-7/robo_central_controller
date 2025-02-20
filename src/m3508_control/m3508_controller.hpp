@@ -3,7 +3,7 @@
 #include "pid_controller/pid_controller.hpp"
 #include <Arduino.h>
 
-namespace m3508_controller {
+namespace m3508_control {
     /// @brief M3508モータの制御を行うクラス
     /// @details
     ///     M3508モータの制御を行うクラスです。
@@ -16,18 +16,17 @@ namespace m3508_controller {
     public:
         M3508Controller(const bt_communication::BtInterface &bt_interface);
         void setup();
-        void loop();
+        void send_currents();
+        void read_and_set_feedback();
+        void read_serial_and_set_target_rpm();
 
     private:
         /// @brief PID制御器(制御の核！)
-        m3508_controller::pid_controller::PIDController pid_controller;
+        m3508_control::pid_controller::PIDController pid_controller;
 
-        /// @brief 前回のCAN送信時間
-        uint32_t previous_can_send_millis;
-        /// @brief 前回のCAN受信時間
-        uint32_t previous_can_receive_millis;
-        /// @brief 前回のシリアル受信時間
-        uint32_t previous_serial_read_millis;
+
+        /// @brief 送信する電流値(mA)のバッファ
+        int32_t command_currents[4];
 
         const bt_communication::BtInterface &bt_interface;
 
@@ -36,4 +35,4 @@ namespace m3508_controller {
             const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp
         );
     };
-} // namespace m3508_controller
+} // namespace m3508_control

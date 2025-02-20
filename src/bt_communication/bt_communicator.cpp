@@ -22,25 +22,25 @@ namespace bt_communication {
 
     BtCommunicator::BtCommunicator()
         : device_connected(false),
-          p_server(nullptr),
-          p_tx_characteristic(nullptr),
-          p_rx_characteristic(nullptr),
+          ble_server(nullptr),
+          tx_characteristic(nullptr),
+          rx_characteristic(nullptr),
           joystick_l_input(joystick_input::JoystickInput()),
           joystick_r_input(joystick_input::JoystickInput()) {}
 
     BtCommunicator::~BtCommunicator() {
-        if (p_server != nullptr) {
-            delete p_server;
+        if (ble_server != nullptr) {
+            delete ble_server;
         }
-        if (p_tx_characteristic != nullptr) {
-            delete p_tx_characteristic;
+        if (tx_characteristic != nullptr) {
+            delete tx_characteristic;
         }
-        if (p_rx_characteristic != nullptr) {
-            delete p_rx_characteristic;
+        if (rx_characteristic != nullptr) {
+            delete rx_characteristic;
         }
     }
 
-    /// @brief main.cppのsetup()から呼び出す
+    /// @brief オブジェクトを使う前に呼び出す！(主にBLEの初期化)
     void BtCommunicator::setup() {
         // 通信時の各種コールバックの作成
         class ServerCallbacks : public BLEServerCallbacks {
@@ -62,51 +62,38 @@ namespace bt_communication {
 
         // BLEの初期化
         BLEDevice::init("esp32_for_BLE");
-        p_server = BLEDevice::createServer();
-        p_server->setCallbacks(new ServerCallbacks(this));
+        ble_server = BLEDevice::createServer();
+        ble_server->setCallbacks(new ServerCallbacks(this));
 
         // Serviceを作成
-        BLEService *p_service = p_server->createService(SERVICE_UUID);
+        BLEService *p_service = ble_server->createService(SERVICE_UUID);
 
         // 送信用Characteristicを作成
         {
-            p_tx_characteristic = p_service->createCharacteristic(
+            tx_characteristic = p_service->createCharacteristic(
                 TX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
             );
-            p_tx_characteristic->setCallbacks(new TxCharacteristicCallbacks());
+            tx_characteristic->setCallbacks(new TxCharacteristicCallbacks());
 
             // Client Characteristc Configuration Descriptor
             BLE2902 *pCccd = new BLE2902();
-            p_tx_characteristic->addDescriptor(pCccd);
+            tx_characteristic->addDescriptor(pCccd);
         }
 
         // 受信用Characteristicを作成
         {
-            p_rx_characteristic =
+            rx_characteristic =
                 p_service->createCharacteristic(RX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
-            p_rx_characteristic->setCallbacks(new RxCharacteristicCallbacks(this));
+            rx_characteristic->setCallbacks(new RxCharacteristicCallbacks(this));
         }
 
         // 通信開始
         p_service->start();
-        BLEAdvertising *p_advertising = p_server->getAdvertising();
+        BLEAdvertising *p_advertising = ble_server->getAdvertising();
         p_advertising->start();
     }
 
-    /// @brief main.cppのloop()から呼び出す
-    void BtCommunicator::loop() {
-        // 接続中
-        if (device_connected) {
-            int random_num = random(255);
-            remote_print("[sample output] random num: ");
-            remote_print(String(random_num));
-            Serial.println("[sample output] random num: ");
-            Serial.println(String(random_num));
-            delay(2000);
-        }
-    }
-
-    /// @brief bluetooth通信の接続時
+    /// @brief bluetooth通信の接続時の処理(主にデバッグログの出力)
     /// @param p_server BLEサーバへのポインタ
     void BtCommunicator::on_connect(BLEServer *p_server) {
         Serial.println("connected!");
@@ -125,7 +112,7 @@ namespace bt_communication {
         device_connected = true;
     }
 
-    /// @brief bluetooth通信の切断時
+    /// @brief bluetooth通信の切断時の処理(主にデバッグログの出力)
     /// @param p_server BLEサーバへのポインタ
     void BtCommunicator::on_disconnect(BLEServer *p_server) {
         Serial.println("disconnected!");
@@ -144,13 +131,14 @@ namespace bt_communication {
         device_connected = false;
     }
 
-    /// @brief bluetooth通信の受信時
+    /// @brief bluetooth通信の受信時の処理
+    ///
     /// @param p_characteristic 通信を受信したCharacteristic
     void BtCommunicator::on_write(BLECharacteristic *p_characteristic) {
         static uint32_t count = 0;
         count++;
 
-        // 受信データを処理
+        // 受信したジョイスティックの入力データをjsonとしてパースし、メンバ変数に格納
         String rx_buf = String(p_characteristic->getValue().c_str());
         String side;
         joystick_input::JoystickInput joystick_input = parse_json_of_joystick_input(rx_buf, &side);
@@ -172,9 +160,8 @@ namespace bt_communication {
     }
 
     /// @brief モニターのコンソールにテキストを送信
-    /// @param text 送信するテキスト
-    void BtCommunicator::remote_print(String text) {
-        if (p_tx_characteristic == nullptr) {
+    void BtCommunicator::remote_print(const String text) {
+        if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
         }
@@ -184,13 +171,13 @@ namespace bt_communication {
         doc["text"] = text;
         String tx_json_string;
         serializeJson(doc, tx_json_string);
-        p_tx_characteristic->setValue(tx_json_string.c_str());
-        p_tx_characteristic->notify();
+        tx_characteristic->setValue(tx_json_string.c_str());
+        tx_characteristic->notify();
     }
 
     /// @brief モニターにモータのフィードバック値を送信
     void BtCommunicator::remote_send_m3508_feedback(float angle, int16_t rpm, int16_t amp, uint8_t temp) {
-        if (p_tx_characteristic == nullptr) {
+        if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
         }
@@ -203,15 +190,15 @@ namespace bt_communication {
         doc["temp"] = temp;
         String tx_json_string;
         serializeJson(doc, tx_json_string);
-        p_tx_characteristic->setValue(tx_json_string.c_str());
-        p_tx_characteristic->notify();
+        tx_characteristic->setValue(tx_json_string.c_str());
+        tx_characteristic->notify();
     }
 
     /// @brief モニターにモータのpid制御値を送信
     void BtCommunicator::remote_send_m3508_pid_fields(
         float output, float p, float i, float d, float target_rpm, float error
     ) {
-        if (p_tx_characteristic == nullptr) {
+        if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
         }
@@ -226,13 +213,13 @@ namespace bt_communication {
         doc["error"] = error;
         String tx_json_string;
         serializeJson(doc, tx_json_string);
-        p_tx_characteristic->setValue(tx_json_string.c_str());
-        p_tx_characteristic->notify();
+        tx_characteristic->setValue(tx_json_string.c_str());
+        tx_characteristic->notify();
     }
 
     /// @brief モニターにジョイスティックの入力値を転送
     void BtCommunicator::remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side) {
-        if (p_tx_characteristic == nullptr) {
+        if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
         }
@@ -248,11 +235,11 @@ namespace bt_communication {
         doc["angle"] = joystick_input.get_angle();
         String tx_json_string;
         serializeJson(doc, tx_json_string);
-        p_tx_characteristic->setValue(tx_json_string.c_str());
-        p_tx_characteristic->notify();
+        tx_characteristic->setValue(tx_json_string.c_str());
+        tx_characteristic->notify();
     }
 
-    /// @brief ジョイスティック入力のjsonをパース
+    /// @brief ジョイスティック入力のjsonをJoystickInputにデシリアライズ
     /// @param json_string bluetoothで受信したjson文字列
     /// @param side bluetoothで受信したジョイスティックの左右を代入
     /// @return ジョイスティックの入力値

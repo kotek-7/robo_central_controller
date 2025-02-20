@@ -22,11 +22,12 @@ namespace bt_communication {
         ~BtCommunicator();
         void setup();
         void loop();
+
+        /// @brief Bluetoothデバイスが(1つ以上)接続されているか
+        bool is_device_connected() const { return device_connected; }
         /// @brief 左のジョイスティック入力を取得
-        /// @return 左のジョイスティック入力
         joystick_input::JoystickInput get_joystick_l_input() const { return joystick_l_input; }
         /// @brief 右のジョイスティック入力を取得
-        /// @return 右のジョイスティック入力
         joystick_input::JoystickInput get_joystick_r_input() const { return joystick_r_input; }
 
         void remote_print(String text);
@@ -37,11 +38,11 @@ namespace bt_communication {
         /// @brief bluetoothデバイスが(1つ以上)接続されているか
         bool device_connected;
         /// @brief BLEサーバーへのポインタ
-        BLEServer *p_server;
+        BLEServer *ble_server;
         /// @brief 送信用Characteristicへのポインタ
-        BLECharacteristic *p_tx_characteristic;
+        BLECharacteristic *tx_characteristic;
         /// @brief 受信用Characteristicへのポインタ
-        BLECharacteristic *p_rx_characteristic;
+        BLECharacteristic *rx_characteristic;
         /// @brief 左のジョイスティック入力
         joystick_input::JoystickInput joystick_l_input;
         /// @brief 右のジョイスティック入力

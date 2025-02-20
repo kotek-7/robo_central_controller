@@ -1,7 +1,7 @@
 #include "pid_controller.hpp"
 #include <Arduino.h>
 
-namespace m3508_controller::pid_controller {
+namespace m3508_control::pid_controller {
     /// @brief pid値のデバッグ出力の間隔(ループ回数)
     constexpr uint8_t DEBUG_PRINT_INTERVAL = 10;
 
@@ -100,4 +100,4 @@ namespace m3508_controller::pid_controller {
 
         return clamped_output;
     }
-}; // namespace m3508_controller::pid_controller
+}; // namespace m3508_control::pid_controller
