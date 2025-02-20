@@ -4,6 +4,14 @@
 #include <Arduino.h>
 
 namespace m3508_controller {
+    /// @brief M3508モータの制御を行うクラス
+    /// @details
+    ///     M3508モータの制御を行うクラスです。
+    ///     このクラスは、M3508モータの制御を行うために、内部にPID制御器(PIDControllerオブジェクト)を持ちます。
+    ///     また、Bluetoothでモニタに情報を送るためのBtInterfaceオブジェクトも持ちます。
+    ///     main.cpp内でsetup()関数を呼び出すことで初期化を行い、loop()関数を呼び出すことで制御を行います。
+    ///     M3508モータの角度、回転数、電流、温度を受信し、pid_controllerに渡します。
+    ///     また、pid_controllerから出力された値をM3508モータに送信します。
     class M3508Controller {
     public:
         M3508Controller(const bt_communication::BtInterface &bt_interface);

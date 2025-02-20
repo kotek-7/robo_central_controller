@@ -28,9 +28,21 @@ namespace bt_communication {
           joystick_l_input(joystick_input::JoystickInput()),
           joystick_r_input(joystick_input::JoystickInput()) {}
 
-    /// @brief セットアップ
+    BtCommunicator::~BtCommunicator() {
+        if (p_server != nullptr) {
+            delete p_server;
+        }
+        if (p_tx_characteristic != nullptr) {
+            delete p_tx_characteristic;
+        }
+        if (p_rx_characteristic != nullptr) {
+            delete p_rx_characteristic;
+        }
+    }
+
+    /// @brief main.cppのsetup()から呼び出す
     void BtCommunicator::setup() {
-        // BLEの初期化
+        // 通信時の各種コールバックの作成
         class ServerCallbacks : public BLEServerCallbacks {
         public:
             BtCommunicator *p_bt_communicator;
@@ -39,9 +51,7 @@ namespace bt_communication {
             void onConnect(BLEServer *pServer) override { p_bt_communicator->on_connect(pServer); }
             void onDisconnect(BLEServer *pServer) override { p_bt_communicator->on_disconnect(pServer); }
         };
-
         class TxCharacteristicCallbacks : public BLECharacteristicCallbacks {};
-
         class RxCharacteristicCallbacks : public BLECharacteristicCallbacks {
         public:
             BtCommunicator *p_bt_communicator;
@@ -50,6 +60,7 @@ namespace bt_communication {
             void onWrite(BLECharacteristic *pCharacteristic) override { p_bt_communicator->on_write(pCharacteristic); }
         };
 
+        // BLEの初期化
         BLEDevice::init("esp32_for_BLE");
         p_server = BLEDevice::createServer();
         p_server->setCallbacks(new ServerCallbacks(this));
@@ -82,7 +93,7 @@ namespace bt_communication {
         p_advertising->start();
     }
 
-    /// @brief メインループ
+    /// @brief main.cppのloop()から呼び出す
     void BtCommunicator::loop() {
         // 接続中
         if (device_connected) {

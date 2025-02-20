@@ -10,16 +10,14 @@ namespace m3508_controller::pid_controller {
     /// @param ki iゲイン
     /// @param kd dゲイン
     /// @param clamping_output 最大出力(積分器のanti-windup用)
-    /// @param interval update_output()の実行間隔(dtとして計算に使うため)
     PIDController::PIDController(
-        const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval,
+        const float kp, const float ki, const float kd, const float clamping_output,
         const bt_communication::BtInterface &bt_interface
     )
         : kp(kp),
           ki(ki),
           kd(kd),
           clamping_output(clamping_output),
-          interval(interval),
           bt_interface(bt_interface),
           integral(0),
           previous_error(0),
@@ -43,11 +41,11 @@ namespace m3508_controller::pid_controller {
         this->amp = amp;
         this->temp = temp;
         if (count % DEBUG_PRINT_INTERVAL == 0) {
-            Serial.println("Received: ");
-            Serial.print("angle: " + String(angle) + "°,");
-            Serial.print("rpm: " + String(rpm) + "rpm, ");
-            Serial.print("amp: " + String(amp) + "mA, ");
-            Serial.print("temp: " + String(temp) + "℃");
+            Serial.print("Received: \n");
+            Serial.print(
+                "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
+                "mA, temp: " + String(temp) + "deg C"
+            );
             Serial.print("\n\n");
             bt_interface.remote_print("Received: ");
             bt_interface.remote_print(
@@ -67,25 +65,24 @@ namespace m3508_controller::pid_controller {
         static uint32_t count = 0;
         count++;
 
-        float current_error = static_cast<float>(target_rpm - rpm);
-        integral += current_error * static_cast<float>(interval);
-        float derivative = (current_error - previous_error) / static_cast<float>(interval);
-        float raw_output = kp * current_error + ki * integral + kd * derivative;
+        const uint32_t dt = millis() - previous_update;
+        const float current_error = static_cast<float>(target_rpm - rpm);
+        integral += current_error * static_cast<float>(dt);
+        const float derivative = (current_error - previous_error) / static_cast<float>(dt);
+        const float raw_output = kp * current_error + ki * integral + kd * derivative;
 
-        float clamped_output = min(max(raw_output, -clamping_output), clamping_output);
+        const float clamped_output = min(max(raw_output, -clamping_output), clamping_output);
         if (raw_output != clamped_output && (raw_output * current_error > 0)) {
             integral = 0;
         }
 
         if (count % DEBUG_PRINT_INTERVAL == 0) {
             Serial.print("Sent: \n");
-            Serial.print("output: " + String(clamped_output) + "mA, ");
-            Serial.print("p: " + String(kp * current_error) + ", ");
-            Serial.print("i: " + String(ki * integral) + ", ");
-            Serial.print("d: " + String(kd * derivative) + ", ");
-            Serial.print("current rpm: " + String(rpm) + "rpm, ");
-            Serial.print("target rpm: " + String(target_rpm) + "rpm, ");
-            Serial.print("error: " + String(current_error) + "rpm, ");
+            Serial.print(
+                "output: " + String(clamped_output) + "mA, p: " + String(kp * current_error) +
+                ", i: " + String(ki * integral) + ", d: " + String(kd * derivative) + ", current rpm: " + String(rpm) +
+                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm"
+            );
             Serial.print("\n\n");
             bt_interface.remote_print("Sent: ");
             bt_interface.remote_print(
@@ -99,6 +96,7 @@ namespace m3508_controller::pid_controller {
         );
 
         previous_error = current_error;
+        previous_update = millis();
 
         return clamped_output;
     }
