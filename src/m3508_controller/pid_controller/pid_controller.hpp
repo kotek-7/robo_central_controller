@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bt_communication/bt_interface.hpp"
 #include <Arduino.h>
 
 namespace m3508_controller::pid_controller {
@@ -12,8 +13,7 @@ namespace m3508_controller::pid_controller {
     public:
         PIDController(
             const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval,
-            std::function<void(String)> remote_print,
-            std::function<void(float output, float p, float i, float d, float target_rpm, float error)> remote_send_pid_fields
+            const bt_communication::BtInterface &bt_interface
         );
 
         void set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp);
@@ -49,10 +49,7 @@ namespace m3508_controller::pid_controller {
         float integral;
         float previous_error;
 
-        /// @brief モニタにPID制御値を送信
-        std::function<void(float output, float p, float i, float d, float target_rpm, float error)> remote_send_pid_fields;
-        /// @brief モニタのコンソールにテキストを送信
-        std::function<void(String)> remote_print;
+        const bt_communication::BtInterface &bt_interface;
     };
 
 } // namespace m3508_controller::pid_controller

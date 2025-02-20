@@ -1,16 +1,12 @@
 #pragma once
 
-#include <Arduino.h>
 #include "pid_controller/pid_controller.hpp"
+#include <Arduino.h>
 
 namespace m3508_controller {
     class M3508Controller {
     public:
-        M3508Controller(
-            std::function<void(String)> remote_print,
-            std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback,
-            std::function<void(float output, float p, float i, float d, float target_rpm, float error)> remote_send_pid_fields
-        );
+        M3508Controller(const bt_communication::BtInterface &bt_interface);
         void setup();
         void loop();
 
@@ -25,10 +21,7 @@ namespace m3508_controller {
         /// @brief 前回のシリアル受信時間
         uint32_t previous_serial_read_millis;
 
-        /// @brief モニタのコンソールにテキストを送信
-        std::function<void(String)> remote_print;
-        /// @brief モニタにフィードバック値を送信
-        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback;
+        const bt_communication::BtInterface &bt_interface;
 
         void milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]);
         void derive_feedback_fields(

@@ -13,16 +13,14 @@ namespace m3508_controller::pid_controller {
     /// @param interval update_output()の実行間隔(dtとして計算に使うため)
     PIDController::PIDController(
         const float kp, const float ki, const float kd, const float clamping_output, const uint32_t interval,
-        std::function<void(String)> remote_print,
-        std::function<void(float output, float p, float i, float d, float target_rpm, float error)> remote_send_pid_fields
+        const bt_communication::BtInterface &bt_interface
     )
         : kp(kp),
           ki(ki),
           kd(kd),
           clamping_output(clamping_output),
           interval(interval),
-          remote_print(remote_print),
-          remote_send_pid_fields(remote_send_pid_fields),
+          bt_interface(bt_interface),
           integral(0),
           previous_error(0),
           target_rpm(0),
@@ -51,8 +49,8 @@ namespace m3508_controller::pid_controller {
             Serial.print("amp: " + String(amp) + "mA, ");
             Serial.print("temp: " + String(temp) + "℃");
             Serial.print("\n\n");
-            remote_print("Received: ");
-            remote_print(
+            bt_interface.remote_print("Received: ");
+            bt_interface.remote_print(
                 "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
                 "mA, temp: " + String(temp) + "deg C"
             );
@@ -89,14 +87,16 @@ namespace m3508_controller::pid_controller {
             Serial.print("target rpm: " + String(target_rpm) + "rpm, ");
             Serial.print("error: " + String(current_error) + "rpm, ");
             Serial.print("\n\n");
-            remote_print("Sent: ");
-            remote_print(
+            bt_interface.remote_print("Sent: ");
+            bt_interface.remote_print(
                 "output: " + String(clamped_output) + "mA, p: " + String(kp * current_error) +
                 ", i: " + String(ki * integral) + ", d: " + String(kd * derivative) + ", current rpm: " + String(rpm) +
                 "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm"
             );
         }
-        remote_send_pid_fields(clamped_output, kp * current_error, ki * integral, kd * derivative, target_rpm, current_error);
+        bt_interface.remote_send_pid_fields(
+            clamped_output, kp * current_error, ki * integral, kd * derivative, target_rpm, current_error
+        );
 
         previous_error = current_error;
 

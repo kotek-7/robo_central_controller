@@ -1,4 +1,5 @@
 #include "m3508_controller.hpp"
+#include "bt_communication/bt_interface.hpp"
 #include "pid_controller/pid_controller.hpp"
 #include <Arduino.h>
 #include <ESP32-TWAI-CAN.hpp>
@@ -22,15 +23,9 @@ namespace m3508_controller {
     /// @param remote_print モニタにテキストを送信する関数
     /// @param remote_send_feedback モニタにフィードバック値を送信する関数
     /// @param remote_send_pid_fields モニタにPID制御値を送信する関数
-    M3508Controller::M3508Controller(
-        std::function<void(String)> remote_print,
-        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback,
-        std::function<void(float output, float p, float i, float d, float target_rpm, float error)>
-            remote_send_pid_fields
-    )
-        : pid_controller(KP, KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL, remote_print, remote_send_pid_fields),
-          remote_print(remote_print),
-          remote_send_feedback(remote_send_feedback),
+    M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface)
+        : pid_controller(KP, KI, KD, CLAMPING_OUTPUT, CAN_SEND_INTERVAL, bt_interface),
+          bt_interface(bt_interface),
           previous_can_send_millis(0),
           previous_can_receive_millis(0),
           previous_serial_read_millis(0) {}
@@ -45,10 +40,10 @@ namespace m3508_controller {
         ESP32Can.setPins(CAN_TX, CAN_RX);
         if (ESP32Can.begin()) {
             Serial.println("Init OK!");
-            remote_print("Init OK!");
+            bt_interface.remote_print("Init OK!");
         } else {
             Serial.println("Init Fail!");
-            remote_print("Init Fail!");
+            bt_interface.remote_print("Init Fail!");
         }
         previous_can_send_millis = millis();
         previous_can_receive_millis = millis();
@@ -116,9 +111,9 @@ namespace m3508_controller {
                 Serial.println("Rpm: " + String(rpm));
                 Serial.println("Amp: " + String(amp));
                 Serial.println("Temp: " + String(temp));
-                remote_print("Received!");
+                bt_interface.remote_print("Received!");
 
-                remote_send_feedback(angle, rpm, amp, temp);
+                bt_interface.remote_send_feedback(angle, rpm, amp, temp);
                 pid_controller.set_feedback_values(angle, rpm, amp, temp);
             } else {
                 Serial.println("No frame received!");
@@ -140,7 +135,7 @@ namespace m3508_controller {
                 Serial.print("Set target rpm to: ");
                 Serial.print(input_string);
                 Serial.print("\n\n");
-                remote_print("Set target rpm to: " + input_string);
+                bt_interface.remote_print("Set target rpm to: " + input_string);
             }
             previous_serial_read_millis = millis();
         }
