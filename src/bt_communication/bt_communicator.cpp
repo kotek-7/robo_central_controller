@@ -9,6 +9,7 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
+#include <memory>
 
 // コントローラーとの通信処理
 namespace bt_communication {
@@ -28,63 +29,56 @@ namespace bt_communication {
           joystick_l_input(joystick_input::JoystickInput()),
           joystick_r_input(joystick_input::JoystickInput()) {}
 
-    BtCommunicator::~BtCommunicator() {
-        if (ble_server != nullptr) {
-            delete ble_server;
-        }
-        if (tx_characteristic != nullptr) {
-            delete tx_characteristic;
-        }
-        if (rx_characteristic != nullptr) {
-            delete rx_characteristic;
-        }
-    }
-
     /// @brief オブジェクトを使う前に呼び出す！(主にBLEの初期化)
     void BtCommunicator::setup() {
-        // 通信時の各種コールバックの作成
+        // 通信時の各種コールバッククラスの作成
         class ServerCallbacks : public BLEServerCallbacks {
         public:
-            BtCommunicator *p_bt_communicator;
+            BtCommunicator& bt_communicator;
 
-            ServerCallbacks(BtCommunicator *p_bt_communicator) : p_bt_communicator(p_bt_communicator) {}
-            void onConnect(BLEServer *pServer) override { p_bt_communicator->on_connect(pServer); }
-            void onDisconnect(BLEServer *pServer) override { p_bt_communicator->on_disconnect(pServer); }
+            ServerCallbacks(BtCommunicator& bt_communicator)
+                : bt_communicator(bt_communicator) {}
+            void onConnect(BLEServer *server) override {
+                bt_communicator.on_connect(server);
+            }
+            void onDisconnect(BLEServer *server) override {
+                bt_communicator.on_disconnect(server);
+            }
         };
         class TxCharacteristicCallbacks : public BLECharacteristicCallbacks {};
         class RxCharacteristicCallbacks : public BLECharacteristicCallbacks {
         public:
-            BtCommunicator *p_bt_communicator;
+            BtCommunicator &bt_communicator;
 
-            RxCharacteristicCallbacks(BtCommunicator *p_bt_communicator) : p_bt_communicator(p_bt_communicator) {}
-            void onWrite(BLECharacteristic *pCharacteristic) override { p_bt_communicator->on_write(pCharacteristic); }
+            RxCharacteristicCallbacks(BtCommunicator &bt_communicator) : bt_communicator(bt_communicator) {}
+            void onWrite(BLECharacteristic *characteristic) override { bt_communicator.on_write(characteristic); }
         };
 
         // BLEの初期化
         BLEDevice::init("esp32_for_BLE");
-        ble_server = BLEDevice::createServer();
-        ble_server->setCallbacks(new ServerCallbacks(this));
+        ble_server = std::unique_ptr<BLEServer>(BLEDevice::createServer());
+        ble_server->setCallbacks(new ServerCallbacks(*this));
 
         // Serviceを作成
         BLEService *p_service = ble_server->createService(SERVICE_UUID);
 
         // 送信用Characteristicを作成
         {
-            tx_characteristic = p_service->createCharacteristic(
+            tx_characteristic = std::unique_ptr<BLECharacteristic>(p_service->createCharacteristic(
                 TX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
-            );
+            ));
             tx_characteristic->setCallbacks(new TxCharacteristicCallbacks());
 
-            // Client Characteristc Configuration Descriptor
-            BLE2902 *pCccd = new BLE2902();
-            tx_characteristic->addDescriptor(pCccd);
+            // BLE2902: Client Characteristc Configuration Descriptor
+            tx_characteristic->addDescriptor(new BLE2902());
         }
 
         // 受信用Characteristicを作成
         {
-            rx_characteristic =
-                p_service->createCharacteristic(RX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE);
-            rx_characteristic->setCallbacks(new RxCharacteristicCallbacks(this));
+            rx_characteristic = std::unique_ptr<BLECharacteristic>(
+                p_service->createCharacteristic(RX_CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_WRITE)
+            );
+            rx_characteristic->setCallbacks(new RxCharacteristicCallbacks(*this));
         }
 
         // 通信開始
@@ -94,38 +88,38 @@ namespace bt_communication {
     }
 
     /// @brief bluetooth通信の接続時の処理(主にデバッグログの出力)
-    /// @param p_server BLEサーバへのポインタ
-    void BtCommunicator::on_connect(BLEServer *p_server) {
+    /// @param server BLEサーバを一時的に参照するためのポインタ
+    void BtCommunicator::on_connect(BLEServer *server) {
         Serial.println("connected!");
         remote_print("conncted!");
 
         // 接続中のデバイスの数を表示
-        auto connected_devices = p_server->getPeerDevices(false); // この引数falseは内部で無視されている
+        auto connected_devices = server->getPeerDevices(false); // この引数falseは内部で無視されている
         Serial.print("connected devices: ");
         Serial.println(String(connected_devices.size()));
         remote_print("connected devices: " + String(connected_devices.size()));
 
         delay(500);
-        p_server->startAdvertising(); // アドバタイズを再開して、更に複数のセントラルとの接続を受付
+        server->startAdvertising(); // アドバタイズを再開して、更に複数のセントラルとの接続を受付
         Serial.println("restart advertising..");
         remote_print("restart advertising..");
         device_connected = true;
     }
 
     /// @brief bluetooth通信の切断時の処理(主にデバッグログの出力)
-    /// @param p_server BLEサーバへのポインタ
-    void BtCommunicator::on_disconnect(BLEServer *p_server) {
+    /// @param server BLEサーバを一時的に参照するためのポインタ
+    void BtCommunicator::on_disconnect(BLEServer *server) {
         Serial.println("disconnected!");
         remote_print("disconnected!");
 
         // 接続中のデバイスの数を表示
-        auto connected_devices = p_server->getPeerDevices(false); // この引数falseは内部で無視されている
+        auto connected_devices = server->getPeerDevices(false); // この引数falseは内部で無視されている
         Serial.print("connected devices: ");
         Serial.println(String(connected_devices.size()));
         remote_print("connected devices: " + String(connected_devices.size()));
 
         delay(500);
-        p_server->startAdvertising();
+        server->startAdvertising();
         Serial.println("start advertising..");
         remote_print("start advertising..");
         device_connected = false;
@@ -133,13 +127,13 @@ namespace bt_communication {
 
     /// @brief bluetooth通信の受信時の処理
     ///
-    /// @param p_characteristic 通信を受信したCharacteristic
-    void BtCommunicator::on_write(BLECharacteristic *p_characteristic) {
+    /// @param characteristic 通信を受信したCharacteristicを一時的に参照するためのポインタ
+    void BtCommunicator::on_write(BLECharacteristic *characteristic) {
         static uint32_t count = 0;
         count++;
 
         // 受信したジョイスティックの入力データをjsonとしてパースし、メンバ変数に格納
-        String rx_buf = String(p_characteristic->getValue().c_str());
+        String rx_buf = String(characteristic->getValue().c_str());
         String side;
         joystick_input::JoystickInput joystick_input = parse_json_of_joystick_input(rx_buf, &side);
         if (side == "l") {
