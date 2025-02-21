@@ -21,8 +21,7 @@ std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication
     }
 ));
 /// M3508モータの制御クラス
-std::unique_ptr<m3508_control::M3508Controller>
-    m3508_controller(new m3508_control::M3508Controller(*bt_interface));
+std::unique_ptr<m3508_control::M3508Controller> m3508_controller(new m3508_control::M3508Controller(*bt_interface));
 
 void setup() {
     Serial.begin(115200);

@@ -34,16 +34,11 @@ namespace bt_communication {
         // 通信時の各種コールバッククラスの作成
         class ServerCallbacks : public BLEServerCallbacks {
         public:
-            BtCommunicator& bt_communicator;
+            BtCommunicator &bt_communicator;
 
-            ServerCallbacks(BtCommunicator& bt_communicator)
-                : bt_communicator(bt_communicator) {}
-            void onConnect(BLEServer *server) override {
-                bt_communicator.on_connect(server);
-            }
-            void onDisconnect(BLEServer *server) override {
-                bt_communicator.on_disconnect(server);
-            }
+            ServerCallbacks(BtCommunicator &bt_communicator) : bt_communicator(bt_communicator) {}
+            void onConnect(BLEServer *server) override { bt_communicator.on_connect(server); }
+            void onDisconnect(BLEServer *server) override { bt_communicator.on_disconnect(server); }
         };
         class TxCharacteristicCallbacks : public BLECharacteristicCallbacks {};
         class RxCharacteristicCallbacks : public BLECharacteristicCallbacks {
