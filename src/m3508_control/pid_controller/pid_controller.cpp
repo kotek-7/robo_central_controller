@@ -41,13 +41,13 @@ namespace m3508_control::pid_controller {
         this->amp = amp;
         this->temp = temp;
         if (count % DEBUG_PRINT_INTERVAL == 0) {
-            Serial.print("Received: \n");
+            Serial.print("Feedback set: \n");
             Serial.print(
                 "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
                 "mA, temp: " + String(temp) + "deg C"
             );
             Serial.print("\n\n");
-            bt_interface.remote_print("Received: ");
+            bt_interface.remote_print("Feedback set: ");
             bt_interface.remote_print(
                 "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
                 "mA, temp: " + String(temp) + "deg C"
@@ -77,14 +77,14 @@ namespace m3508_control::pid_controller {
         }
 
         if (count % DEBUG_PRINT_INTERVAL == 0) {
-            Serial.print("Sent: \n");
+            Serial.print("Output: \n");
             Serial.print(
                 "output: " + String(clamped_output) + "mA, p: " + String(kp * current_error) +
                 ", i: " + String(ki * integral) + ", d: " + String(kd * derivative) + ", current rpm: " + String(rpm) +
                 "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm"
             );
             Serial.print("\n\n");
-            bt_interface.remote_print("Sent: ");
+            bt_interface.remote_print("Output: ");
             bt_interface.remote_print(
                 "output: " + String(clamped_output) + "mA, p: " + String(kp * current_error) +
                 ", i: " + String(ki * integral) + ", d: " + String(kd * derivative) + ", current rpm: " + String(rpm) +

@@ -2,12 +2,12 @@
 #include "bt_communication/bt_interface.hpp"
 #include "pid_controller/pid_controller.hpp"
 #include <Arduino.h>
-#include <ESP32-TWAI-CAN.hpp>
+#include <driver/twai.h>
 
 // モータの制御処理
 namespace m3508_control {
-    constexpr uint8_t CAN_TX = 16;
-    constexpr uint8_t CAN_RX = 4;
+    constexpr gpio_num_t CAN_TX = GPIO_NUM_16;
+    constexpr gpio_num_t CAN_RX = GPIO_NUM_4;
     constexpr uint16_t CAN_ID = 0x200;
 
     // PID制御用定数
@@ -23,18 +23,26 @@ namespace m3508_control {
 
     /// @brief 使う前に呼び出す！(CANの初期化など)
     void M3508Controller::setup() {
-        ESP32Can.setRxQueueSize(5);
-        ESP32Can.setTxQueueSize(5);
+        twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(CAN_TX, CAN_RX, TWAI_MODE_NORMAL);
+        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
+        twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 
-        ESP32Can.setSpeed(ESP32Can.convertSpeed(1000));
-
-        ESP32Can.setPins(CAN_TX, CAN_RX);
-        if (ESP32Can.begin()) {
-            Serial.println("Init OK!");
-            bt_interface.remote_print("Init OK!");
+        if (twai_driver_install(&g_config, &t_config, &f_config) == ESP_OK) {
+            Serial.println("Driver install OK!");
+            bt_interface.remote_print("Driver install OK!");
         } else {
-            Serial.println("Init Fail!");
-            bt_interface.remote_print("Init Fail!");
+            Serial.println("Driver install fail!");
+            bt_interface.remote_print("Driver install fail!");
+            return;
+        }
+
+        if (twai_start() == ESP_OK) {
+            Serial.println("Driver start OK!");
+            bt_interface.remote_print("Driver start OK!");
+        } else {
+            Serial.println("Driver start fail!");
+            bt_interface.remote_print("Driver start fail!");
+            return;
         }
     }
 
@@ -44,38 +52,59 @@ namespace m3508_control {
         uint8_t tx_buf[8];
         milli_amperes_to_bytes(command_currents, tx_buf);
 
-        CanFrame tx_frame;
-        tx_frame.identifier = CAN_ID;
-        tx_frame.extd = 0;
-        tx_frame.data_length_code = 8;
-        tx_frame.data[0] = tx_buf[0];
-        tx_frame.data[1] = tx_buf[1];
-        tx_frame.data[2] = tx_buf[2];
-        tx_frame.data[3] = tx_buf[3];
-        tx_frame.data[4] = tx_buf[4];
-        tx_frame.data[5] = tx_buf[5];
-        tx_frame.data[6] = tx_buf[6];
-        tx_frame.data[7] = tx_buf[7];
-        ESP32Can.writeFrame(tx_frame, 0);
+        twai_message_t tx_message;
+        tx_message.identifier = CAN_ID;
+        tx_message.extd = 0;
+        tx_message.rtr = 0;
+        tx_message.ss = 0;
+        tx_message.self = 0;
+        tx_message.dlc_non_comp = 0;
+        tx_message.data_length_code = 8;
+        for (uint8_t i = 0; i < 8; i++) {
+            tx_message.data[i] = tx_buf[i];
+        }
+
+        if (twai_transmit(&tx_message, 0) == ESP_OK) {
+            Serial.println("Transmit OK!");
+            bt_interface.remote_print("Transmit OK!");
+        } else {
+            Serial.println("Transmit Fail: The TX queue is full!");
+            bt_interface.remote_print("Transmit Fail: The TX queue is full!");
+        }
     }
 
     /// @brief M3508からのフィードバックを読み取って、PID制御器に設定
     void M3508Controller::read_and_set_feedback() {
-        CanFrame rx_frame;
-        if (ESP32Can.readFrame(rx_frame, 0)) {
-            uint32_t rx_id = rx_frame.identifier;
-
-            uint32_t controller_id = rx_id - 0x200;
-            float angle;
-            int16_t rpm;
-            int16_t amp;
-            uint8_t temp;
-            derive_feedback_fields(rx_frame.data, &angle, &rpm, &amp, &temp);
-
-            pid_controller.set_feedback_values(angle, rpm, amp, temp);
-
-            bt_interface.remote_send_feedback(angle, rpm, amp, temp);
+        twai_message_t rx_message;
+        if (twai_receive(&rx_message, 0) != ESP_OK) {
+            Serial.println("Receive Fail: The RX queue is empty!");
+            bt_interface.remote_print("Receive Fail: The RX queue is empty!");
         }
+        if (rx_message.rtr) {
+            Serial.println("Receive Fail: The received message is a remote frame!");
+            bt_interface.remote_print("Receive Fail: The received message is a remote frame!");
+            return;
+        }
+        if (rx_message.extd) {
+            Serial.println("Receive Fail: The received message is an extended frame!");
+            bt_interface.remote_print("Receive Fail: The received message is an extended frame!");
+            return;
+        }
+
+        Serial.println("Receive OK!");
+        bt_interface.remote_print("Receive OK!");
+
+        uint32_t rx_id = rx_message.identifier;
+
+        uint32_t controller_id = rx_id - 0x200;
+        float angle;
+        int16_t rpm;
+        int16_t amp;
+        uint8_t temp;
+        derive_feedback_fields(rx_message.data, &angle, &rpm, &amp, &temp);
+        pid_controller.set_feedback_values(angle, rpm, amp, temp);
+
+        bt_interface.remote_send_feedback(angle, rpm, amp, temp);
     }
 
     /// @brief シリアル通信を読み取ってPIDの目標値を設定
