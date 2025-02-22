@@ -23,6 +23,23 @@ namespace m3508_control {
         void read_and_set_feedback();
         void read_serial_and_set_target_rpm();
 
+        /// @brief PID制御器のpゲインを設定する
+        void set_kp(float p) {
+            pid_controller.set_kp(p);
+        };
+        /// @brief PID制御器のiゲインを設定する
+        void set_ki(float i) {
+            pid_controller.set_ki(i);
+        };
+        /// @brief PID制御器のdゲインを設定する
+        void set_kd(float d) {
+            pid_controller.set_kd(d);
+        };
+        /// @brief PID制御器の目標値(rpm)を設定する
+        void set_target_rpm(float target_rpm) {
+            pid_controller.set_target_rpm(target_rpm);
+        };
+
     private:
         /// @brief PID制御器(制御の核！)
         m3508_control::pid_controller::PIDController pid_controller;

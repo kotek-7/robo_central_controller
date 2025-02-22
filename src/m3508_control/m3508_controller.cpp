@@ -11,9 +11,9 @@ namespace m3508_control {
     constexpr uint16_t CAN_ID = 0x200;
 
     // PID制御用定数
-    constexpr float KP = 0.5f;
-    constexpr float KI = 0.0003f;
-    constexpr float KD = 40;
+    constexpr float KP = 0.3;
+    constexpr float KI = 0.000012;
+    constexpr float KD = 0;
     constexpr float CLAMPING_OUTPUT = 2000;
 
     M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface)

@@ -6,6 +6,7 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
+#include <ArduinoJson.h>
 #include <memory>
 
 namespace bt_communication {
@@ -15,6 +16,7 @@ namespace bt_communication {
     ///
     ///     BLEでコントローラからのジョイスティック入力を自動で受け取り、保持します。
     ///     また、モニタにBLEで各種データを送信するための関数も提供します。
+    ///     Bluetooth通信の受信時のイベントハンドラを登録することもできます。
     ///
     ///     使う前にsetup()を呼び出して初期化する必要があります。
     class BtCommunicator {
@@ -32,6 +34,7 @@ namespace bt_communication {
         void remote_print(String text);
         void remote_send_m3508_feedback(float angle, int16_t rpm, int16_t amp, uint8_t temp);
         void remote_send_m3508_pid_fields(float output, float p, float i, float d, float target_rpm, float error);
+        void add_write_event_listener(std::function<void(JsonDocument doc)> listener);
 
     private:
         /// @brief bluetoothデバイスが(1つ以上)接続されているか
@@ -46,11 +49,12 @@ namespace bt_communication {
         joystick_input::JoystickInput joystick_l_input;
         /// @brief 右のジョイスティック入力
         joystick_input::JoystickInput joystick_r_input;
+        std::vector<std::function<void(JsonDocument doc)>> on_write_event_listeners;
 
         void on_connect(BLEServer *server);
         void on_disconnect(BLEServer *server);
         void on_write(BLECharacteristic *characteristic);
         void remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side);
-        joystick_input::JoystickInput parse_json_of_joystick_input(String json_string, String *side);
+        void set_and_forward_joystick_input(JsonDocument doc);
     };
 } // namespace bt_communication

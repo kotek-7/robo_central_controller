@@ -18,17 +18,25 @@ namespace m3508_control::pid_controller {
             const float kp, const float ki, const float kd, const float clamping_output,
             const bt_communication::BtInterface &bt_interface
         );
+
+        /// @brief kpを設定する
+        void set_kp(const float kp) { this->kp = kp; };
+        /// @brief kiを設定する
+        void set_ki(const float ki) { this->ki = ki; };
+        /// @brief kdを設定する
+        void set_kd(const float kd) { this->kd = kd; };
+
         void set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp);
         void set_target_rpm(const int16_t target_rpm);
         float update_output();
 
     private:
         /// @brief PID制御のpゲイン
-        const float kp;
+        float kp;
         /// @brief PID制御のiゲイン
-        const float ki;
+        float ki;
         /// @brief PID制御のdゲイン
-        const float kd;
+        float kd;
         /// @brief 最大出力(積分器のanti-windup用)
         const float clamping_output;
 

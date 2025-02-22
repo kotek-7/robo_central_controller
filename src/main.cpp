@@ -29,6 +29,23 @@ void setup() {
     try {
         bt_communicator->setup();
         m3508_controller->setup();
+
+        // Bluetooth通信の受信時のイベントハンドラとしてPIDゲインの設定の処理を追加
+        bt_communicator->add_write_event_listener([&](JsonDocument doc) {
+            if (doc["type"] != "setPidGains") {
+                return;
+            }
+            m3508_controller->set_kp(doc["kp"].as<float>());
+            m3508_controller->set_ki(doc["ki"].as<float>());
+            m3508_controller->set_kd(doc["kd"].as<float>());
+        });
+        // Bluetooth通信の受信時のイベントハンドラとして制御目標値の設定の処理を追加
+        bt_communicator->add_write_event_listener([&](JsonDocument doc) {
+            if (doc["type"] != "setTargetRpm") {
+                return;
+            }
+            m3508_controller->set_target_rpm(doc["targetRpm"].as<float>());
+        });
     } catch (const std::exception &e) {
         Serial.print("Unhandled error in setup: ");
         Serial.println(e.what());
@@ -41,7 +58,6 @@ void loop() {
     count++;
 
     try {
-        // デバイスが接続されている場合
         if (bt_communicator->is_device_connected()) {
             // モニタのコンソールにサンプル出力
             if (count % 2000 == 0) {

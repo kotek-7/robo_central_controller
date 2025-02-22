@@ -10,8 +10,10 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <memory>
+#include <vector>
 
 // コントローラーとの通信処理
+// Bluetooth(BLE)通信の概要: https://www.musen-connect.co.jp/blog/course/trial-production/ble-beginner-1/
 namespace bt_communication {
     // uuid生成: https://www.uuidgenerator.net/
     constexpr const char *SERVICE_UUID = "0a133f79-efe1-40c5-b4a5-cba5980d0d0f";
@@ -76,6 +78,9 @@ namespace bt_communication {
             rx_characteristic->setCallbacks(new RxCharacteristicCallbacks(*this));
         }
 
+        // Bluetooth受信時にジョイスティック入力を読み取りモニターに転送するイベントリスナを登録
+        add_write_event_listener([this](JsonDocument doc) { this->set_and_forward_joystick_input(doc); });
+
         // 通信開始
         p_service->start();
         BLEAdvertising *p_advertising = ble_server->getAdvertising();
@@ -121,30 +126,23 @@ namespace bt_communication {
     }
 
     /// @brief bluetooth通信の受信時の処理
-    ///
+    /// @details 受信したデータをデシリアライズし、受信したデータを処理するイベントリスナを呼び出します。
     /// @param characteristic 通信を受信したCharacteristicを一時的に参照するためのポインタ
     void BtCommunicator::on_write(BLECharacteristic *characteristic) {
-        static uint32_t count = 0;
-        count++;
-
-        // 受信したジョイスティックの入力データをjsonとしてパースし、メンバ変数に格納
+        // BLEで受信したデータを取得
         String rx_buf = String(characteristic->getValue().c_str());
-        String side;
-        joystick_input::JoystickInput joystick_input = parse_json_of_joystick_input(rx_buf, &side);
-        if (side == "l") {
-            joystick_l_input = joystick_input;
-        } else if (side == "r") {
-            joystick_r_input = joystick_input;
-        } else {
-            Serial.println("error: invalid side");
-            remote_print("error: invalid side");
-            return;
+
+        // 受信したjsonのデータをデシリアライズ
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, rx_buf);
+        if (error) {
+            Serial.print("deserialization error: ");
+            Serial.print(error.c_str());
         }
 
-        // ジョイスティックの入力をモニターに転送(バッファの圧迫を防ぐため、一定間隔で)
-        if (count % JOYSTICK_INPUT_FORWARD_INTERVAL == 0) {
-            remote_send_joystick_input(joystick_l_input, String("l"));
-            remote_send_joystick_input(joystick_r_input, String("r"));
+        // 受信したデータを処理するイベントリスナを全部呼び出す
+        for (auto listener : on_write_event_listeners) {
+            listener(doc);
         }
     }
 
@@ -206,6 +204,11 @@ namespace bt_communication {
         tx_characteristic->notify();
     }
 
+    /// @brief BLEで受信したデータを処理するリスナーを追加
+    void BtCommunicator::add_write_event_listener(std::function<void(JsonDocument doc)> listener) {
+        on_write_event_listeners.push_back(listener);
+    }
+
     /// @brief モニターにジョイスティックの入力値を転送
     void BtCommunicator::remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side) {
         if (tx_characteristic == nullptr) {
@@ -228,23 +231,39 @@ namespace bt_communication {
         tx_characteristic->notify();
     }
 
-    /// @brief ジョイスティック入力のjsonをJoystickInputにデシリアライズ
-    /// @param json_string bluetoothで受信したjson文字列
-    /// @param side bluetoothで受信したジョイスティックの左右を代入
-    /// @return ジョイスティックの入力値
-    joystick_input::JoystickInput BtCommunicator::parse_json_of_joystick_input(String json_string, String *side) {
-        JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, json_string);
-        if (error) {
-            Serial.print("deserialization error: ");
-            Serial.print(error.c_str());
-        }
-        *side = ((const char *)(doc["side"] | "#"))[0]; // see: https://arduinojson.org
-        utils::Vec2 input = utils::Vec2(doc["x"], doc["y"]);
-        utils::Vec2 leveled_input = utils::Vec2(doc["leveledX"], doc["leveledY"]);
-        float distance = doc["distance"];
-        float angle = doc["angle"];
-        return joystick_input::JoystickInput(input, leveled_input, distance, angle);
-    }
+    /// @brief ジョイスティックの入力値をメンバ変数に格納し、モニターに転送
+    void BtCommunicator::set_and_forward_joystick_input(JsonDocument doc) {
+        static uint32_t count = 0;
+        count++;
 
+        // Bluetoothメッセージがジョイスティック入力値かどうかチェック
+        if (doc["type"] != "joystick") {
+            return;
+        }
+
+        // ジョイスティックの入力値を取得して、メンバ変数に格納
+        if (doc["side"] == "l") {
+            utils::Vec2 input = utils::Vec2(doc["x"], doc["y"]);
+            utils::Vec2 leveled_input = utils::Vec2(doc["leveledX"], doc["leveledY"]);
+            float distance = doc["distance"];
+            float angle = doc["angle"];
+            joystick_l_input = joystick_input::JoystickInput(input, leveled_input, distance, angle);
+        } else if (doc["side"] == "r") {
+            utils::Vec2 input = utils::Vec2(doc["x"], doc["y"]);
+            utils::Vec2 leveled_input = utils::Vec2(doc["leveledX"], doc["leveledY"]);
+            float distance = doc["distance"];
+            float angle = doc["angle"];
+            joystick_r_input = joystick_input::JoystickInput(input, leveled_input, distance, angle);
+        } else {
+            Serial.println("error: invalid side");
+            remote_print("error: invalid side");
+            return;
+        }
+
+        // ジョイスティックの入力をモニターに転送(バッファの圧迫を防ぐため、一定間隔で)
+        if (count % JOYSTICK_INPUT_FORWARD_INTERVAL == 0) {
+            remote_send_joystick_input(joystick_l_input, String("l"));
+            remote_send_joystick_input(joystick_r_input, String("r"));
+        }
+    }
 } // namespace bt_communication
