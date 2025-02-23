@@ -18,14 +18,14 @@ namespace m3508_control::pid_controller {
           ki(ki),
           kd(kd),
           clamping_output(clamping_output),
-          bt_interface(bt_interface),
-          integral(0),
-          previous_error(0),
-          target_rpm(0),
           angle(0),
           rpm(0),
           amp(0),
-          temp(0) {}
+          temp(0),
+          target_rpm(0),
+          integral(0),
+          previous_error(0),
+          bt_interface(bt_interface) {}
 
     /// @brief フィードバック値を設定
     /// @param angle モータの現在の角度(°)
