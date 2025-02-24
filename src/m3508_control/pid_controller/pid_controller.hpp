@@ -55,7 +55,6 @@ namespace m3508_control::pid_controller {
         float integral;
         uint32_t previous_update;
         float previous_error;
-        float previous_proportional;
 
         /// @brief Bluetooth通信用の関数集めたやつ
         const bt_communication::BtInterface &bt_interface;
