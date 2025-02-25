@@ -12,7 +12,10 @@ namespace m3508_control::pid_controller {
     /// @param clamping_output 最大出力(積分器のanti-windup用)
     PIDController::PIDController(
         const float kp, const float ki, const float kd, const float clamping_output,
-        const bt_communication::BtInterface &bt_interface
+        std::function<void(String)> remote_print,
+        std::function<
+            void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>
+            remote_send_pid_fields
     )
         : kp(kp),
           ki(ki),
@@ -26,7 +29,8 @@ namespace m3508_control::pid_controller {
           integral(0),
           previous_update(millis()),
           previous_error(0),
-          bt_interface(bt_interface) {}
+          remote_print(remote_print),
+          remote_send_pid_fields(remote_send_pid_fields) {}
 
     /// @brief フィードバック値を設定
     /// @param angle モータの現在の角度(°)
@@ -48,8 +52,8 @@ namespace m3508_control::pid_controller {
                 "mA, temp: " + String(temp) + "deg C"
             );
             Serial.print("\n\n");
-            bt_interface.remote_print("Feedback set: ");
-            bt_interface.remote_print(
+            remote_print("Feedback set: ");
+            remote_print(
                 "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
                 "mA, temp: " + String(temp) + "deg C"
             );
@@ -67,21 +71,21 @@ namespace m3508_control::pid_controller {
         count++;
 
         const uint32_t dt = millis() - previous_update;
-        const float current_error = static_cast<float>(target_rpm - rpm);
+        const float error = static_cast<float>(target_rpm - rpm);
 
         // P値の計算
-        const float proportional = kp * current_error;
+        const float proportional = kp * error;
         // I値の計算
-        integral += ki * current_error * static_cast<float>(dt);
+        integral += ki * error * static_cast<float>(dt);
         // D値の計算
-        const float derivative = kd * (current_error - previous_error) / static_cast<float>(dt);
+        const float derivative = kd * (error - previous_error) / static_cast<float>(dt);
 
         // 出力値の計算
         const float raw_output = proportional + integral + derivative;
         // 出力値を制限
         const float clamped_output = min(max(raw_output, -clamping_output), clamping_output);
         // 積分器のanti-windup
-        if (raw_output != clamped_output && (raw_output * current_error > 0)) {
+        if (raw_output != clamped_output && (raw_output * error > 0)) {
             integral = 0;
         }
 
@@ -89,23 +93,21 @@ namespace m3508_control::pid_controller {
         if (count % DEBUG_PRINT_INTERVAL == 0) {
             Serial.print("Output: \n");
             Serial.print(
-                "output: " + String(clamped_output) + "mA, p: " + String(proportional) +
-                ", i: " + String(integral) + ", d: " + String(derivative) + ", current rpm: " + String(rpm) +
-                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm"
+                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) +
+                ", d: " + String(derivative) + ", current rpm: " + String(rpm) +
+                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
             );
             Serial.print("\n\n");
-            bt_interface.remote_print("Output: ");
-            bt_interface.remote_print(
-                "output: " + String(clamped_output) + "mA, p: " + String(proportional) +
-                ", i: " + String(integral) + ", d: " + String(derivative) + ", current rpm: " + String(rpm) +
-                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(current_error) + "rpm"
+            remote_print("Output: ");
+            remote_print(
+                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) +
+                ", d: " + String(derivative) + ", current rpm: " + String(rpm) +
+                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
             );
         }
-        bt_interface.remote_send_pid_fields(
-            clamped_output, proportional, integral, derivative, target_rpm, current_error
-        );
+        remote_send_pid_fields(clamped_output, proportional, integral, derivative, target_rpm, error);
 
-        previous_error = current_error;
+        previous_error = error;
         previous_update = millis();
 
         return clamped_output;

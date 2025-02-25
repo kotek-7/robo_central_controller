@@ -16,18 +16,23 @@ namespace m3508_control {
     constexpr float KD = 0;
     constexpr float CLAMPING_OUTPUT = 2000;
 
-    M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface)
-        : pid_controller(KP, KI, KD, CLAMPING_OUTPUT, bt_interface),
+    M3508Controller::M3508Controller(const uint8_t c620_id, const bt_communication::BtInterface &bt_interface)
+        : pid_controller(
+              KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
+              [&](float output, float proportional, float integral, float derivative, float target_rpm, float error) {
+                  bt_interface.remote_send_pid_fields(c620_id, output, proportional, integral, derivative, target_rpm, error);
+              }
+          ),
           bt_interface(bt_interface),
           command_currents{0, 0, 0, 0} {}
 
     /// @brief 使う前に呼び出す！(CANの初期化など)
     void M3508Controller::setup() {
-        twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(CAN_TX, CAN_RX, TWAI_MODE_NORMAL);
-        twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
-        twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+        twai_general_config_t general_config = TWAI_GENERAL_CONFIG_DEFAULT(CAN_TX, CAN_RX, TWAI_MODE_NORMAL);
+        twai_timing_config_t timing_config = TWAI_TIMING_CONFIG_1MBITS();
+        twai_filter_config_t filter_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 
-        if (twai_driver_install(&g_config, &t_config, &f_config) == ESP_OK) {
+        if (twai_driver_install(&general_config, &timing_config, &filter_config) == ESP_OK) {
             Serial.println("Driver install OK!");
             bt_interface.remote_print("Driver install OK!");
         } else {
@@ -92,7 +97,7 @@ namespace m3508_control {
 
         uint32_t rx_id = rx_message.identifier;
 
-        uint32_t controller_id = rx_id - 0x200;
+        uint32_t c620_id = rx_id - 0x200;
         float angle;
         int16_t rpm;
         int16_t amp;
@@ -100,7 +105,7 @@ namespace m3508_control {
         derive_feedback_fields(rx_message.data, &angle, &rpm, &amp, &temp);
         pid_controller.set_feedback_values(angle, rpm, amp, temp);
 
-        bt_interface.remote_send_feedback(angle, rpm, amp, temp);
+        bt_interface.remote_send_feedback(c620_id, angle, rpm, amp, temp);
     }
 
     /// @brief シリアル通信を読み取ってPIDの目標値を設定

@@ -16,7 +16,10 @@ namespace m3508_control::pid_controller {
     public:
         PIDController(
             const float kp, const float ki, const float kd, const float clamping_output,
-            const bt_communication::BtInterface &bt_interface
+            std::function<void(String)> remote_print,
+            std::function<
+                void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>
+                remote_send_pid_fields
         );
 
         /// @brief kpを設定する
@@ -56,8 +59,12 @@ namespace m3508_control::pid_controller {
         uint32_t previous_update;
         float previous_error;
 
-        /// @brief Bluetooth通信用の関数集めたやつ
-        const bt_communication::BtInterface &bt_interface;
+        /// @brief モニターのコンソールに情報を送信する関数
+        std::function<void(String)> remote_print;
+        /// @brief モニターにPID制御の情報を送信する関数(C620のIDを上位のM3508Controller任せるため、BtInterfaceを使わない)
+        std::function<
+            void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>
+            remote_send_pid_fields;
     };
 
 } // namespace m3508_control::pid_controller
