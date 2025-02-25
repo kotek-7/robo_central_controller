@@ -30,7 +30,7 @@ void setup() {
         bt_communicator->setup();
         m3508_controller->setup();
 
-        // Bluetooth通信の受信時のイベントハンドラとしてPIDゲインの設定の処理を追加
+        // Bluetooth通信の受信時のイベントハンドラとしてPIDゲインをセットする処理を追加
         bt_communicator->add_write_event_listener([&](JsonDocument doc) {
             if (doc["type"] != "setPidGains") {
                 return;
@@ -39,7 +39,7 @@ void setup() {
             m3508_controller->set_ki(doc["ki"].as<float>());
             m3508_controller->set_kd(doc["kd"].as<float>());
         });
-        // Bluetooth通信の受信時のイベントハンドラとして制御目標値の設定の処理を追加
+        // Bluetooth通信の受信時のイベントハンドラとして制御目標値をセットする処理を追加
         bt_communicator->add_write_event_listener([&](JsonDocument doc) {
             if (doc["type"] != "setTargetRpm") {
                 return;
@@ -62,7 +62,7 @@ void loop() {
             // Bluetooth接続時の処理
         }
 
-        // M3508に制御量を送信
+        // 制御量をPIDで計算してM3508に送信
         if (count % CAN_SEND_INTERVAL == 0) {
             m3508_controller->send_currents();
         }
