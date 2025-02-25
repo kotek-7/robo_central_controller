@@ -7,8 +7,9 @@ namespace bt_communication {
     public:
         BtInterface(
             std::function<void(String)> remote_print,
-            std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback,
-            std::function<void(float output, float p, float i, float d, float target_rpm, float error)>
+            std::function<void(uint8_t c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp)>
+                remote_send_feedback,
+            std::function<void(uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error)>
                 remote_send_pid_fields
         )
             : remote_print(remote_print),
@@ -17,9 +18,9 @@ namespace bt_communication {
         /// @brief モニターのコンソールに文字列を表示する
         std::function<void(String)> remote_print;
         /// @brief モニターにM3508のフィードバックを送信する
-        std::function<void(float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback;
+        std::function<void(uint8_t c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp)> remote_send_feedback;
         /// @brief モニターにPIDのパラメータを送信する
-        std::function<void(float output, float p, float i, float d, float target_rpm, float error)>
+        std::function<void(uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error)>
             remote_send_pid_fields;
     };
-} // namespace bt_interface
+} // namespace bt_communication
