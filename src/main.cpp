@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include <memory>
 
-constexpr uint32_t CAN_SEND_INTERVAL = 100;
-constexpr uint32_t CAN_RECEIVE_INTERVAL = 100;
+constexpr uint32_t CAN_SEND_INTERVAL = 20;
+constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
 constexpr uint32_t SERIAL_READ_INTERVAL = 100;
 
 /// Bluetooth通信クラス
@@ -59,14 +59,7 @@ void loop() {
 
     try {
         if (bt_communicator->is_device_connected()) {
-            // モニタのコンソールにサンプル出力
-            if (count % 2000 == 0) {
-                int random_num = random(255);
-                bt_communicator->remote_print("[sample output] random num: ");
-                bt_communicator->remote_print(String(random_num));
-                Serial.println("[sample output] random num: ");
-                Serial.println(String(random_num));
-            }
+            // Bluetooth接続時の処理
         }
 
         // M3508に制御量を送信

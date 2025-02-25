@@ -24,6 +24,7 @@ namespace m3508_control::pid_controller {
           temp(0),
           target_rpm(0),
           integral(0),
+          previous_update(millis()),
           previous_error(0),
           bt_interface(bt_interface) {}
 

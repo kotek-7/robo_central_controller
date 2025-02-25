@@ -64,10 +64,8 @@ namespace m3508_control {
             tx_message.data[i] = tx_buf[i];
         }
 
-        if (twai_transmit(&tx_message, 0) == ESP_OK) {
-            Serial.println("Transmit OK!");
-            bt_interface.remote_print("Transmit OK!");
-        } else {
+        const auto tx_result = twai_transmit(&tx_message, 0);
+        if (tx_result != ESP_OK) {
             Serial.println("Transmit Fail: The TX queue is full!");
             bt_interface.remote_print("Transmit Fail: The TX queue is full!");
         }
@@ -76,7 +74,8 @@ namespace m3508_control {
     /// @brief M3508からのフィードバックを読み取って、PID制御器に設定
     void M3508Controller::read_and_set_feedback() {
         twai_message_t rx_message;
-        if (twai_receive(&rx_message, 0) != ESP_OK) {
+        const auto rx_result = twai_receive(&rx_message, 0);
+        if (rx_result != ESP_OK) {
             Serial.println("Receive Fail: The RX queue is empty!");
             bt_interface.remote_print("Receive Fail: The RX queue is empty!");
         }
@@ -90,9 +89,6 @@ namespace m3508_control {
             bt_interface.remote_print("Receive Fail: The received message is an extended frame!");
             return;
         }
-
-        Serial.println("Receive OK!");
-        bt_interface.remote_print("Receive OK!");
 
         uint32_t rx_id = rx_message.identifier;
 
