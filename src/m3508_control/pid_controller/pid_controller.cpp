@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include "pid_controller.hpp"
 
 namespace m3508_control::pid_controller {

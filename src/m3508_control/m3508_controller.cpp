@@ -1,9 +1,5 @@
-#include <Arduino.h>
 #include <driver/twai.h>
-#include "c620_id.hpp"
 #include "m3508_controller.hpp"
-#include "bt_communication/bt_interface.hpp"
-#include "pid_controller/pid_controller.hpp"
 
 // モータの制御処理
 namespace m3508_control {

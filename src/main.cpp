@@ -1,7 +1,4 @@
-#include <Arduino.h>
-#include <memory>
 #include <unordered_map>
-#include "m3508_control/c620_id.hpp"
 #include "m3508_control/m3508_controller.hpp"
 #include "bt_communication/bt_communicator.hpp"
 #include "bt_communication/bt_interface.hpp"

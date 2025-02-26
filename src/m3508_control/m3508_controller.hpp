@@ -1,9 +1,7 @@
 #pragma once
 
-#include <Arduino.h>
 #include <unordered_map>
 #include "c620_id.hpp"
-#include "bt_communication/bt_interface.hpp"
 #include "pid_controller/pid_controller.hpp"
 
 namespace m3508_control {
