@@ -1,8 +1,6 @@
 // https://qiita.com/takudooon/items/2ab77f22196504ff9597
 // https://qiita.com/umi_kappa/items/dd3d7a27cf714971406e
 
-#include "bt_communicator.hpp"
-#include "joystick_input.hpp"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <BLE2902.h>
@@ -11,6 +9,10 @@
 #include <BLEUtils.h>
 #include <memory>
 #include <vector>
+#include "bt_communicator.hpp"
+#include "m3508_control/m3508_controller.hpp"
+#include "m3508_control/c620_id.hpp"
+#include "joystick_input.hpp"
 
 // コントローラーとの通信処理
 // Bluetooth(BLE)通信の概要: https://www.musen-connect.co.jp/blog/course/trial-production/ble-beginner-1/

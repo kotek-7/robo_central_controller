@@ -1,5 +1,7 @@
 #pragma once
+
 #include <Arduino.h>
+#include "m3508_control/c620_id.hpp"
 
 namespace bt_communication {
     // Bluetoothでいろいろするための関数集
