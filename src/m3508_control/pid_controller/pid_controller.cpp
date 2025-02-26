@@ -1,5 +1,5 @@
-#include <Arduino.h>
 #include "pid_controller.hpp"
+#include <Arduino.h>
 
 namespace m3508_control::pid_controller {
     /// @brief pid値のデバッグ出力の間隔(ループ回数)
@@ -65,7 +65,7 @@ namespace m3508_control::pid_controller {
     void PIDController::set_target_rpm(const int16_t target_rpm) { this->target_rpm = target_rpm; }
 
     /// @brief 内部状態からPID出力値を計算し、内部状態を更新
-    /// @return 出力値(mA)
+    /// @return 出力値
     float PIDController::update_output() {
         static uint32_t count = 0;
         count++;

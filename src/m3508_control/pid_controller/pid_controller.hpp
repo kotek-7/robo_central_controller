@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Arduino.h>
 #include "bt_communication/bt_interface.hpp"
+#include <Arduino.h>
 
 namespace m3508_control::pid_controller {
     /// @brief PID制御を行う。フィードバック値を保持し、出力値を計算する。

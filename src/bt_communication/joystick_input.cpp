@@ -1,6 +1,6 @@
-#include <Arduino.h>
-#include "utils/vec2.hpp"
 #include "joystick_input.hpp"
+#include "utils/vec2.hpp"
+#include <Arduino.h>
 
 namespace bt_communication::joystick_input {
     JoystickInput::JoystickInput()

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "joystick_input.hpp"
 #include <Arduino.h>
 #include <BLE2902.h>
 #include <BLEDevice.h>
@@ -7,8 +8,6 @@
 #include <BLEUtils.h>
 #include <ArduinoJson.h>
 #include <memory>
-#include "m3508_control/c620_id.hpp"
-#include "joystick_input.hpp"
 
 namespace bt_communication {
     /// @brief Bluetooth通信を行うクラス

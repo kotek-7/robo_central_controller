@@ -11,4 +11,3 @@ AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
 PackConstructorInitializers: NextLine
 PenaltyReturnTypeOnItsOwnLine: 0
-SortIncludes: false
