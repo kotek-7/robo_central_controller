@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 #include "bt_communicator.hpp"
-#include "m3508_control/m3508_controller.hpp"
 #include "m3508_control/c620_id.hpp"
 #include "joystick_input.hpp"
 
