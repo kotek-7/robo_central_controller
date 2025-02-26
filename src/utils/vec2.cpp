@@ -1,5 +1,5 @@
-#include "vec2.hpp"
 #include <cmath>
+#include "vec2.hpp"
 
 namespace utils {
     Vec2::Vec2(float x, float y) : x(x), y(y) {}
