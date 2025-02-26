@@ -1,7 +1,6 @@
 #include <unordered_map>
 #include "m3508_control/m3508_controller.hpp"
 #include "bt_communication/bt_communicator.hpp"
-#include "bt_communication/bt_interface.hpp"
 
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
