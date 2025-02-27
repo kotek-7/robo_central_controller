@@ -84,7 +84,7 @@ namespace m3508_control {
         }
     }
 
-    /// @brief M3508にCANで電流値を送信
+    /// @brief PIDで電流値を計算してM3508にCANで送信
     void M3508Controller::send_currents() {
         command_currents[0] = pid_controllers.at(C620Id::C1).update_output();
         command_currents[1] = pid_controllers.at(C620Id::C2).update_output();
