@@ -46,6 +46,7 @@ namespace m3508_control {
     private:
         /// @brief PID制御器(制御の核！)
         m3508_control::pid_controller::PIDController pid_controller;
+        std::unordered_map<C620Id, m3508_control::pid_controller::PIDController, C620IdHash> pid_controllers;
 
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
