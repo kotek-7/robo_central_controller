@@ -56,9 +56,6 @@ namespace m3508_control {
                    }
                )},
           }),
-          pid_controller(
-              KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print, [](float, float, float, float, float, float) {}
-          ),
           command_currents{0, 0, 0, 0},
           bt_interface(bt_interface) {}
 
