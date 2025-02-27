@@ -17,9 +17,13 @@ namespace m3508_control {
         : pid_controllers({
               {C620Id::C1,
                pid_controller::PIDController(
-                   KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm,
-                       float error) {
+                   KP,
+                   KI,
+                   KD,
+                   CLAMPING_OUTPUT,
+                   bt_interface.remote_print,
+                   [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
+                   ) {
                        bt_interface.remote_send_pid_fields(
                            C620Id::C1, output, proportional, integral, derivative, target_rpm, error
                        );
