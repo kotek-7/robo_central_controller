@@ -56,7 +56,7 @@ namespace m3508_control {
             pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm);
         };
 
-        void set_target_velocity(const utils::Vec2 &target_velocity) { this->target_velocity = target_velocity; }
+        void set_target_velocity(const utils::Vec2 &target_velocity);
 
     private:
         /// @brief PID制御器(制御の核！)
@@ -70,6 +70,13 @@ namespace m3508_control {
         void milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]);
         void derive_feedback_fields(
             const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp
+        );
+        void calc_target_rpms(
+            const utils::Vec2 &target_velocity,
+            float *out_target_rpm_1,
+            float *out_target_rpm_2,
+            float *out_target_rpm_3,
+            float *out_target_rpm_4
         );
     };
 } // namespace m3508_control

@@ -182,6 +182,17 @@ namespace m3508_control {
         }
     }
 
+    void M3508Controller::set_target_velocity(const utils::Vec2 &target_velocity) {
+        this->target_velocity = target_velocity;
+
+        float target_rpm_1, target_rpm_2, target_rpm_3, target_rpm_4;
+        calc_target_rpms(target_velocity, &target_rpm_1, &target_rpm_2, &target_rpm_3, &target_rpm_4);
+        pid_controllers.at(C620Id::C1).set_target_rpm(target_rpm_1);
+        pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm_2);
+        pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm_3);
+        pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm_4);
+    }
+
     /// @brief 4つの電流値を、CANで速度コントローラに送信するデータへ変換
     /// @param milli_amperes 4つの-20000\~20000の電流値(mA)を格納した配列
     /// (要素番号と速度コントローラIDが対応)
@@ -210,5 +221,21 @@ namespace m3508_control {
         *out_rpm = rx_buf[2] << 8 | rx_buf[3];
         *out_amp = rx_buf[4] << 8 | rx_buf[5];
         *out_temp = rx_buf[6];
+    }
+
+    void M3508Controller::calc_target_rpms(
+        const utils::Vec2 &target_velocity,
+        float *out_target_rpm_1,
+        float *out_target_rpm_2,
+        float *out_target_rpm_3,
+        float *out_target_rpm_4
+    ) {
+        constexpr float one_over_root_2 = 0.70710678118f; // 1.0 / sqrt(2.0)
+        constexpr float wheel_radius = 0.051f; // 車輪の半径(m)
+        // TODO: 機体の回転を考慮
+        *out_target_rpm_1 = one_over_root_2 * (-target_velocity.x + target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
+        *out_target_rpm_2 = one_over_root_2 * (-target_velocity.x - target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
+        *out_target_rpm_3 = one_over_root_2 * (target_velocity.x - target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
+        *out_target_rpm_4 = one_over_root_2 * (target_velocity.x + target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
     }
 } // namespace m3508_control
