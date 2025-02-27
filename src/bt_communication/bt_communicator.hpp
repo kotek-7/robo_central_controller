@@ -1,6 +1,5 @@
 #pragma once
 
-#include "joystick_input.hpp"
 #include <Arduino.h>
 #include <BLE2902.h>
 #include <BLEDevice.h>
@@ -8,6 +7,8 @@
 #include <BLEUtils.h>
 #include <ArduinoJson.h>
 #include <memory>
+#include "m3508_control/c620_id.hpp"
+#include "joystick_input.hpp"
 
 namespace bt_communication {
     /// @brief Bluetooth通信を行うクラス
@@ -32,8 +33,8 @@ namespace bt_communication {
         joystick_input::JoystickInput get_joystick_r_input() const { return joystick_r_input; }
 
         void remote_print(String text);
-        void remote_send_m3508_feedback(uint8_t c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
-        void remote_send_m3508_pid_fields(uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error);
+        void remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
+        void remote_send_m3508_pid_fields(m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error);
         void add_write_event_listener(std::function<void(JsonDocument doc)> listener);
 
     private:

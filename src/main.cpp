@@ -1,8 +1,6 @@
-#include "bt_communication/bt_communicator.hpp"
-#include "bt_communication/bt_interface.hpp"
+#include <unordered_map>
 #include "m3508_control/m3508_controller.hpp"
-#include <Arduino.h>
-#include <memory>
+#include "bt_communication/bt_communicator.hpp"
 
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
@@ -13,15 +11,15 @@ std::unique_ptr<bt_communication::BtCommunicator> bt_communicator(new bt_communi
 ///  Bluetoothでいろいろやり取りする関数をまとめたクラス
 std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication::BtInterface(
     [](String text) { bt_communicator->remote_print(text); },
-    [](uint8_t c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
+    [](m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
         bt_communicator->remote_send_m3508_feedback(c620_id, angle, rpm, amp, temp);
     },
-    [](uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error) {
+    [](m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error) {
         bt_communicator->remote_send_m3508_pid_fields(c620_id, output, p, i, d, target_rpm, error);
     }
 ));
 /// M3508モータの制御クラス
-std::unique_ptr<m3508_control::M3508Controller> m3508_controller(new m3508_control::M3508Controller(1, *bt_interface));
+std::unique_ptr<m3508_control::M3508Controller> m3508_controller(new m3508_control::M3508Controller(*bt_interface));
 
 void setup() {
     Serial.begin(115200);

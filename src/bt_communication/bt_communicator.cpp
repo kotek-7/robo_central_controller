@@ -1,16 +1,8 @@
 // https://qiita.com/takudooon/items/2ab77f22196504ff9597
 // https://qiita.com/umi_kappa/items/dd3d7a27cf714971406e
 
-#include "bt_communicator.hpp"
-#include "joystick_input.hpp"
-#include <Arduino.h>
-#include <ArduinoJson.h>
-#include <BLE2902.h>
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <memory>
 #include <vector>
+#include "bt_communicator.hpp"
 
 // コントローラーとの通信処理
 // Bluetooth(BLE)通信の概要: https://www.musen-connect.co.jp/blog/course/trial-production/ble-beginner-1/
@@ -163,7 +155,7 @@ namespace bt_communication {
     }
 
     /// @brief モニターにモータのフィードバック値を送信
-    void BtCommunicator::remote_send_m3508_feedback(uint8_t c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
+    void BtCommunicator::remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
         if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
@@ -171,7 +163,7 @@ namespace bt_communication {
 
         JsonDocument doc;
         doc["type"] = "m3508Feedback";
-        doc["c620Id"] = c620_id;
+        doc["c620Id"] = static_cast<uint8_t>(c620_id);
         doc["angle"] = angle;
         doc["rpm"] = rpm;
         doc["amp"] = amp;
@@ -184,7 +176,7 @@ namespace bt_communication {
 
     /// @brief モニターにモータのpid制御値を送信
     void BtCommunicator::remote_send_m3508_pid_fields(
-        uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error
+        m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error
     ) {
         if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
@@ -193,7 +185,7 @@ namespace bt_communication {
 
         JsonDocument doc;
         doc["type"] = "m3508PidFields";
-        doc["c620Id"] = c620_id;
+        doc["c620Id"] = static_cast<uint8_t>(c620_id);
         doc["output"] = output;
         doc["p"] = p;
         doc["i"] = i;
