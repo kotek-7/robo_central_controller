@@ -56,6 +56,8 @@ namespace m3508_control {
             pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm);
         };
 
+        void set_target_velocity(const utils::Vec2 &target_velocity) { this->target_velocity = target_velocity; }
+
     private:
         /// @brief PID制御器(制御の核！)
         std::unordered_map<C620Id, m3508_control::pid_controller::PIDController, C620IdHash> pid_controllers;
