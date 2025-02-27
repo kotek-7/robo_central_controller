@@ -5,6 +5,8 @@
 #include "pid_controller/pid_controller.hpp"
 
 namespace m3508_control {
+    using CanId = uint32_t;
+
     /// @brief M3508モータの制御を行うクラス
     /// @details
     ///     M3508モータの制御を行うクラスです。
