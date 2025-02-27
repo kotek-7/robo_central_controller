@@ -19,8 +19,7 @@ namespace m3508_control {
               [&](float output, float proportional, float integral, float derivative, float target_rpm, float error) {
                   bt_interface.remote_send_pid_fields(C620Id::C1, output, proportional, integral, derivative, target_rpm, error);
               }
-               )},
-          }),
+          ),
           command_currents{0, 0, 0, 0},
           bt_interface(bt_interface) {}
 
