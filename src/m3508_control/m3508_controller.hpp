@@ -28,19 +28,31 @@ namespace m3508_control {
 
         /// @brief PID制御器のpゲインを設定する
         void set_kp(float p) {
-            pid_controller.set_kp(p);
+            pid_controllers.at(C620Id::C1).set_kp(p);
+            pid_controllers.at(C620Id::C2).set_kp(p);
+            pid_controllers.at(C620Id::C3).set_kp(p);
+            pid_controllers.at(C620Id::C4).set_kp(p);
         };
         /// @brief PID制御器のiゲインを設定する
         void set_ki(float i) {
-            pid_controller.set_ki(i);
+            pid_controllers.at(C620Id::C1).set_ki(i);
+            pid_controllers.at(C620Id::C2).set_ki(i);
+            pid_controllers.at(C620Id::C3).set_ki(i);
+            pid_controllers.at(C620Id::C4).set_ki(i);
         };
         /// @brief PID制御器のdゲインを設定する
         void set_kd(float d) {
-            pid_controller.set_kd(d);
+            pid_controllers.at(C620Id::C1).set_kd(d);
+            pid_controllers.at(C620Id::C2).set_kd(d);
+            pid_controllers.at(C620Id::C3).set_kd(d);
+            pid_controllers.at(C620Id::C4).set_kd(d);
         };
         /// @brief PID制御器の目標値(rpm)を設定する
         void set_target_rpm(float target_rpm) {
-            pid_controller.set_target_rpm(target_rpm);
+            pid_controllers.at(C620Id::C1).set_target_rpm(target_rpm);
+            pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm);
+            pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm);
+            pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm);
         };
 
     private:
