@@ -33,7 +33,7 @@ namespace bt_communication {
         joystick_input::JoystickInput get_joystick_r_input() const { return joystick_r_input; }
 
         void remote_print(String text);
-        void remote_send_m3508_feedback(uint8_t c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
+        void remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
         void remote_send_m3508_pid_fields(uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error);
         void add_write_event_listener(std::function<void(JsonDocument doc)> listener);
 
