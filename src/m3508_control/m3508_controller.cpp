@@ -19,9 +19,10 @@ namespace m3508_control {
               [&](float output, float proportional, float integral, float derivative, float target_rpm, float error) {
                   bt_interface.remote_send_pid_fields(C620Id::C1, output, proportional, integral, derivative, target_rpm, error);
               }
-          ),
-          bt_interface(bt_interface),
-          command_currents{0, 0, 0, 0} {}
+               )},
+          }),
+          command_currents{0, 0, 0, 0},
+          bt_interface(bt_interface) {}
 
     /// @brief 使う前に呼び出す！(CANの初期化など)
     void M3508Controller::setup() {
