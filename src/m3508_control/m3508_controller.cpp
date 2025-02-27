@@ -92,9 +92,9 @@ namespace m3508_control {
             return;
         }
 
-        uint32_t rx_id = rx_message.identifier;
+        CanId rx_can_id = rx_message.identifier;
+        C620Id rx_c620_id = static_cast<C620Id>(rx_can_id - 0x200);
 
-        uint32_t c620_id = rx_id - 0x200;
         float angle;
         int16_t rpm;
         int16_t amp;
