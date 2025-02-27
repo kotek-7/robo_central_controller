@@ -18,7 +18,7 @@ namespace m3508_control {
     ///     また、Bluetoothでモニタに様々な情報を送るためのBtInterfaceオブジェクトも持ちます。
     class M3508Controller {
     public:
-        M3508Controller(const uint8_t c620_id, const bt_communication::BtInterface &bt_interface);
+        M3508Controller(const bt_communication::BtInterface &bt_interface);
         void setup();
         void send_currents();
         void read_and_set_feedback();
@@ -47,8 +47,6 @@ namespace m3508_control {
 
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
-        /// @brief C620(モータドライバ)のID
-        uint32_t c620_id;
 
         const bt_communication::BtInterface &bt_interface;
 

@@ -13,11 +13,11 @@ namespace m3508_control {
     constexpr float KD = 0;
     constexpr float CLAMPING_OUTPUT = 2000;
 
-    M3508Controller::M3508Controller(const uint8_t c620_id, const bt_communication::BtInterface &bt_interface)
+    M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface)
         : pid_controller(
               KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
               [&](float output, float proportional, float integral, float derivative, float target_rpm, float error) {
-                  bt_interface.remote_send_pid_fields(c620_id, output, proportional, integral, derivative, target_rpm, error);
+                  bt_interface.remote_send_pid_fields(1, output, proportional, integral, derivative, target_rpm, error);
               }
           ),
           bt_interface(bt_interface),
