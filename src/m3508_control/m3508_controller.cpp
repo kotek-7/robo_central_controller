@@ -1,6 +1,5 @@
 #include "m3508_controller.hpp"
 #include "bt_communication/bt_interface.hpp"
-#include "c620_id.hpp"
 #include "pid_controller/pid_controller.hpp"
 #include <Arduino.h>
 #include <driver/twai.h>
@@ -17,51 +16,15 @@ namespace m3508_control {
     constexpr float KD = 0;
     constexpr float CLAMPING_OUTPUT = 2000;
 
-    M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface)
-        : pid_controllers({
-              {C620Id::C1,
-               pid_controller::PIDController(
-                   KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm,
-                       float error) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C1, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-              {C620Id::C2,
-               pid_controller::PIDController(
-                   KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm,
-                       float error) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C2, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-              {C620Id::C3,
-               pid_controller::PIDController(
-                   KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm,
-                       float error) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C3, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-              {C620Id::C4,
-               pid_controller::PIDController(
-                   KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm,
-                       float error) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C4, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-          }),
-          command_currents{0, 0, 0, 0},
-          bt_interface(bt_interface) {}
+    M3508Controller::M3508Controller(const uint8_t c620_id, const bt_communication::BtInterface &bt_interface)
+        : pid_controller(
+              KP, KI, KD, CLAMPING_OUTPUT, bt_interface.remote_print,
+              [&](float output, float proportional, float integral, float derivative, float target_rpm, float error) {
+                  bt_interface.remote_send_pid_fields(c620_id, output, proportional, integral, derivative, target_rpm, error);
+              }
+          ),
+          bt_interface(bt_interface),
+          command_currents{0, 0, 0, 0} {}
 
     /// @brief 使う前に呼び出す！(CANの初期化など)
     void M3508Controller::setup() {
@@ -90,11 +53,7 @@ namespace m3508_control {
 
     /// @brief M3508にCANで電流値を送信
     void M3508Controller::send_currents() {
-        command_currents[0] = pid_controllers[C620Id::C1].update_output();
-        command_currents[1] = pid_controllers[C620Id::C2].update_output();
-        command_currents[2] = pid_controllers[C620Id::C3].update_output();
-        command_currents[3] = pid_controllers[C620Id::C4].update_output();
-
+        command_currents[0] = pid_controller.update_output();
         uint8_t tx_buf[8];
         milli_amperes_to_bytes(command_currents, tx_buf);
 
@@ -136,17 +95,17 @@ namespace m3508_control {
             return;
         }
 
-        CanId rx_can_id = rx_message.identifier;
-        C620Id rx_c620_id = static_cast<C620Id>(rx_can_id - 0x200);
+        uint32_t rx_id = rx_message.identifier;
 
+        uint32_t c620_id = rx_id - 0x200;
         float angle;
         int16_t rpm;
         int16_t amp;
         uint8_t temp;
         derive_feedback_fields(rx_message.data, &angle, &rpm, &amp, &temp);
-        pid_controllers[rx_c620_id].set_feedback_values(angle, rpm, amp, temp);
+        pid_controller.set_feedback_values(angle, rpm, amp, temp);
 
-        bt_interface.remote_send_feedback(rx_c620_id, angle, rpm, amp, temp);
+        bt_interface.remote_send_feedback(c620_id, angle, rpm, amp, temp);
     }
 
     /// @brief シリアル通信を読み取ってPIDの目標値を設定
@@ -158,10 +117,7 @@ namespace m3508_control {
                 char input_char = Serial.read();
                 input_string.concat(input_char);
             }
-            pid_controllers[C620Id::C1].set_target_rpm(input_string.toInt());
-            pid_controllers[C620Id::C2].set_target_rpm(input_string.toInt());
-            pid_controllers[C620Id::C3].set_target_rpm(input_string.toInt());
-            pid_controllers[C620Id::C4].set_target_rpm(input_string.toInt());
+            pid_controller.set_target_rpm(input_string.toInt());
             Serial.print("Set target rpm to: " + input_string);
             Serial.print("\n\n");
 

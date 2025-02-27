@@ -3,8 +3,6 @@
 
 #include "bt_communicator.hpp"
 #include "joystick_input.hpp"
-#include "m3508_control/m3508_controller.hpp"
-#include "m3508_control/c620_id.hpp"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <BLE2902.h>
@@ -165,7 +163,7 @@ namespace bt_communication {
     }
 
     /// @brief モニターにモータのフィードバック値を送信
-    void BtCommunicator::remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
+    void BtCommunicator::remote_send_m3508_feedback(uint8_t c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
         if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
@@ -186,7 +184,7 @@ namespace bt_communication {
 
     /// @brief モニターにモータのpid制御値を送信
     void BtCommunicator::remote_send_m3508_pid_fields(
-        m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error
+        uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error
     ) {
         if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");

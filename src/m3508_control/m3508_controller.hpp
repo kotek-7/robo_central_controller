@@ -1,14 +1,9 @@
 #pragma once
 
-#include "bt_communication/bt_interface.hpp"
-#include "c620_id.hpp"
 #include "pid_controller/pid_controller.hpp"
 #include <Arduino.h>
-#include <unordered_map>
 
 namespace m3508_control {
-    using CanId = uint32_t;
-
     /// @brief M3508モータの制御を行うクラス
     /// @details
     ///     M3508モータの制御を行うクラスです。
@@ -22,7 +17,7 @@ namespace m3508_control {
     ///     また、Bluetoothでモニタに様々な情報を送るためのBtInterfaceオブジェクトも持ちます。
     class M3508Controller {
     public:
-        M3508Controller(const bt_communication::BtInterface &bt_interface);
+        M3508Controller(const uint8_t c620_id, const bt_communication::BtInterface &bt_interface);
         void setup();
         void send_currents();
         void read_and_set_feedback();
@@ -30,39 +25,29 @@ namespace m3508_control {
 
         /// @brief PID制御器のpゲインを設定する
         void set_kp(float p) {
-            pid_controllers[C620Id::C1].set_kp(p);
-            pid_controllers[C620Id::C2].set_kp(p);
-            pid_controllers[C620Id::C3].set_kp(p);
-            pid_controllers[C620Id::C4].set_kp(p);
+            pid_controller.set_kp(p);
         };
         /// @brief PID制御器のiゲインを設定する
         void set_ki(float i) {
-            pid_controllers[C620Id::C1].set_ki(i);
-            pid_controllers[C620Id::C2].set_ki(i);
-            pid_controllers[C620Id::C3].set_ki(i);
-            pid_controllers[C620Id::C4].set_ki(i);
+            pid_controller.set_ki(i);
         };
         /// @brief PID制御器のdゲインを設定する
         void set_kd(float d) {
-            pid_controllers[C620Id::C1].set_kd(d);
-            pid_controllers[C620Id::C2].set_kd(d);
-            pid_controllers[C620Id::C3].set_kd(d);
-            pid_controllers[C620Id::C4].set_kd(d);
+            pid_controller.set_kd(d);
         };
         /// @brief PID制御器の目標値(rpm)を設定する
         void set_target_rpm(float target_rpm) {
-            pid_controllers[C620Id::C1].set_target_rpm(target_rpm);
-            pid_controllers[C620Id::C2].set_target_rpm(target_rpm);
-            pid_controllers[C620Id::C3].set_target_rpm(target_rpm);
-            pid_controllers[C620Id::C4].set_target_rpm(target_rpm);
+            pid_controller.set_target_rpm(target_rpm);
         };
 
     private:
         /// @brief PID制御器(制御の核！)
-        std::unordered_map<C620Id, m3508_control::pid_controller::PIDController, C620IdHash> pid_controllers;
+        m3508_control::pid_controller::PIDController pid_controller;
 
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
+        /// @brief C620(モータドライバ)のID
+        uint32_t c620_id;
 
         const bt_communication::BtInterface &bt_interface;
 
