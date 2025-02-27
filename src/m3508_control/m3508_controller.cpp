@@ -231,11 +231,17 @@ namespace m3508_control {
         float *out_target_rpm_4
     ) {
         constexpr float one_over_root_2 = 0.70710678118f; // 1.0 / sqrt(2.0)
-        constexpr float wheel_radius = 0.051f; // 車輪の半径(m)
+        constexpr float wheel_radius = 0.051f;            // 車輪の半径(m)
+        constexpr float reduction_ratio = 19.2032085561;  // 減速比
+
         // TODO: 機体の回転を考慮
-        *out_target_rpm_1 = one_over_root_2 * (-target_velocity.x + target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
-        *out_target_rpm_2 = one_over_root_2 * (-target_velocity.x - target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
-        *out_target_rpm_3 = one_over_root_2 * (target_velocity.x - target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
-        *out_target_rpm_4 = one_over_root_2 * (target_velocity.x + target_velocity.y) / wheel_radius * 60.0f / (2.0f * M_PI);
+        *out_target_rpm_1 = one_over_root_2 * (-target_velocity.x + target_velocity.y) / wheel_radius * 60.0f /
+                            (2.0f * M_PI) * reduction_ratio;
+        *out_target_rpm_2 = one_over_root_2 * (-target_velocity.x - target_velocity.y) / wheel_radius * 60.0f /
+                            (2.0f * M_PI) * reduction_ratio;
+        *out_target_rpm_3 = one_over_root_2 * (target_velocity.x - target_velocity.y) / wheel_radius * 60.0f /
+                            (2.0f * M_PI) * reduction_ratio;
+        *out_target_rpm_4 = one_over_root_2 * (target_velocity.x + target_velocity.y) / wheel_radius * 60.0f /
+                            (2.0f * M_PI) * reduction_ratio;
     }
 } // namespace m3508_control

@@ -44,6 +44,16 @@ void setup() {
             }
             m3508_controller->set_target_rpm(doc["targetRpm"].as<float>());
         });
+
+        bt_communicator->add_write_event_listener([&](JsonDocument doc) {
+            constexpr float input_amp = 0.05;
+            if (doc["type"] != "joystick") {
+                return;
+            }
+            m3508_controller->set_target_velocity(
+                utils::Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
+            );
+        });
     } catch (const std::exception &e) {
         Serial.print("Unhandled error in setup: ");
         Serial.println(e.what());
