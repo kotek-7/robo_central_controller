@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include "c620_id.hpp"
+#include "utils/vec2.hpp"
 #include "pid_controller/pid_controller.hpp"
 
 namespace m3508_control {
@@ -58,7 +59,7 @@ namespace m3508_control {
     private:
         /// @brief PID制御器(制御の核！)
         std::unordered_map<C620Id, m3508_control::pid_controller::PIDController, C620IdHash> pid_controllers;
-
+        utils::Vec2 target_velocity;
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
 
