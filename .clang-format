@@ -9,6 +9,8 @@ AccessModifierOffset: -4
 NamespaceIndentation: All
 AlignAfterOpenBracket: BlockIndent
 BinPackArguments: false
+BreakBeforeComma: Always
+BinPackParameters: false
 PackConstructorInitializers: NextLine
 PenaltyReturnTypeOnItsOwnLine: 0
 SortIncludes: false

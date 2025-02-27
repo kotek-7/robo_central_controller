@@ -10,7 +10,10 @@ namespace m3508_control::pid_controller {
     /// @param kd dゲイン
     /// @param clamping_output 最大出力(積分器のanti-windup用)
     PIDController::PIDController(
-        const float kp, const float ki, const float kd, const float clamping_output,
+        const float kp,
+        const float ki,
+        const float kd,
+        const float clamping_output,
         std::function<void(String)> remote_print,
         std::function<
             void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>

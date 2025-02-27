@@ -155,7 +155,9 @@ namespace bt_communication {
     }
 
     /// @brief モニターにモータのフィードバック値を送信
-    void BtCommunicator::remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
+    void BtCommunicator::remote_send_m3508_feedback(
+        m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp
+    ) {
         if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
