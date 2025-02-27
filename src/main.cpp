@@ -50,6 +50,9 @@ void setup() {
             if (doc["type"] != "joystick") {
                 return;
             }
+            if (doc["side"] != "l") {
+                return;
+            }
             m3508_controller->set_target_velocity(
                 utils::Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
             );
