@@ -14,7 +14,7 @@ std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication
     [](m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
         bt_communicator->remote_send_m3508_feedback(c620_id, angle, rpm, amp, temp);
     },
-    [](uint8_t c620_id, float output, float p, float i, float d, float target_rpm, float error) {
+    [](m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error) {
         bt_communicator->remote_send_m3508_pid_fields(c620_id, output, p, i, d, target_rpm, error);
     }
 ));
