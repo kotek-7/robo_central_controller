@@ -102,7 +102,7 @@ namespace m3508_control {
         derive_feedback_fields(rx_message.data, &angle, &rpm, &amp, &temp);
         pid_controller.set_feedback_values(angle, rpm, amp, temp);
 
-        bt_interface.remote_send_feedback(c620_id, angle, rpm, amp, temp);
+        bt_interface.remote_send_feedback(rx_c620_id, angle, rpm, amp, temp);
     }
 
     /// @brief シリアル通信を読み取ってPIDの目標値を設定
