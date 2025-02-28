@@ -55,7 +55,7 @@ void setup() {
 
         can_communicator->add_reveive_event_listener(
             {0x201, 0x202, 0x203, 0x204},
-            [&](const utils::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
+            [&](const can::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
                 m3508_controller->set_feedback(rx_id, rx_buf);
             }
         );

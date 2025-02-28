@@ -2,6 +2,6 @@
 
 #include <Arduino.h>
 
-namespace utils {
+namespace can {
     using CanId = uint32_t;
 }
