@@ -13,69 +13,69 @@ namespace m3508_control {
     constexpr float KD = 0;
     constexpr float CLAMPING_OUTPUT = 2000;
 
-    M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface, const can::CanTransmitter &can_transmitter)
-        : pid_controllers({
-              {C620Id::C1,
-               pid_controller::PIDController(
-                   KP,
-                   KI,
-                   KD,
-                   CLAMPING_OUTPUT,
-                   bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
-                   ) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C1, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-              {C620Id::C2,
-               pid_controller::PIDController(
-                   KP,
-                   KI,
-                   KD,
-                   CLAMPING_OUTPUT,
-                   bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
-                   ) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C2, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-              {C620Id::C3,
-               pid_controller::PIDController(
-                   KP,
-                   KI,
-                   KD,
-                   CLAMPING_OUTPUT,
-                   bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
-                   ) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C3, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-              {C620Id::C4,
-               pid_controller::PIDController(
-                   KP,
-                   KI,
-                   KD,
-                   CLAMPING_OUTPUT,
-                   bt_interface.remote_print,
-                   [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
-                   ) {
-                       bt_interface.remote_send_pid_fields(
-                           C620Id::C4, output, proportional, integral, derivative, target_rpm, error
-                       );
-                   }
-               )},
-          }),
-          target_velocity(utils::Vec2(0, 0)),
-          command_currents{0, 0, 0, 0},
-          bt_interface(bt_interface),
-          can_transmitter(can_transmitter) {}
+    M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface, const can::CanTransmitter &can_transmitter) :
+        pid_controllers({
+            {C620Id::C1,
+             pid_controller::PIDController(
+                 KP,
+                 KI,
+                 KD,
+                 CLAMPING_OUTPUT,
+                 bt_interface.remote_print,
+                 [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
+                 ) {
+                     bt_interface.remote_send_pid_fields(
+                         C620Id::C1, output, proportional, integral, derivative, target_rpm, error
+                     );
+                 }
+             )},
+            {C620Id::C2,
+             pid_controller::PIDController(
+                 KP,
+                 KI,
+                 KD,
+                 CLAMPING_OUTPUT,
+                 bt_interface.remote_print,
+                 [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
+                 ) {
+                     bt_interface.remote_send_pid_fields(
+                         C620Id::C2, output, proportional, integral, derivative, target_rpm, error
+                     );
+                 }
+             )},
+            {C620Id::C3,
+             pid_controller::PIDController(
+                 KP,
+                 KI,
+                 KD,
+                 CLAMPING_OUTPUT,
+                 bt_interface.remote_print,
+                 [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
+                 ) {
+                     bt_interface.remote_send_pid_fields(
+                         C620Id::C3, output, proportional, integral, derivative, target_rpm, error
+                     );
+                 }
+             )},
+            {C620Id::C4,
+             pid_controller::PIDController(
+                 KP,
+                 KI,
+                 KD,
+                 CLAMPING_OUTPUT,
+                 bt_interface.remote_print,
+                 [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
+                 ) {
+                     bt_interface.remote_send_pid_fields(
+                         C620Id::C4, output, proportional, integral, derivative, target_rpm, error
+                     );
+                 }
+             )},
+        }),
+        target_velocity(utils::Vec2(0, 0)),
+        command_currents{0, 0, 0, 0},
+        bt_interface(bt_interface),
+        can_transmitter(can_transmitter) {}
 
     /// @brief 使う前に呼び出す！(CANの初期化など)
     void M3508Controller::setup() {

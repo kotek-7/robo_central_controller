@@ -15,13 +15,13 @@ namespace bt_communication {
     /// @brief ジョイスティック入力をモニターに転送する間隔(ループ回数)
     constexpr const u_int8_t JOYSTICK_INPUT_FORWARD_INTERVAL = 10;
 
-    BtCommunicator::BtCommunicator()
-        : device_connected(false),
-          ble_server(nullptr),
-          tx_characteristic(nullptr),
-          rx_characteristic(nullptr),
-          joystick_l_input(joystick_input::JoystickInput()),
-          joystick_r_input(joystick_input::JoystickInput()) {}
+    BtCommunicator::BtCommunicator() :
+        device_connected(false),
+        ble_server(nullptr),
+        tx_characteristic(nullptr),
+        rx_characteristic(nullptr),
+        joystick_l_input(joystick_input::JoystickInput()),
+        joystick_r_input(joystick_input::JoystickInput()) {}
 
     /// @brief オブジェクトを使う前に呼び出す！(主にBLEの初期化)
     void BtCommunicator::setup() {
@@ -30,7 +30,8 @@ namespace bt_communication {
         public:
             BtCommunicator &bt_communicator;
 
-            ServerCallbacks(BtCommunicator &bt_communicator) : bt_communicator(bt_communicator) {}
+            ServerCallbacks(BtCommunicator &bt_communicator) :
+                bt_communicator(bt_communicator) {}
             void onConnect(BLEServer *server) override { bt_communicator.on_connect(server); }
             void onDisconnect(BLEServer *server) override { bt_communicator.on_disconnect(server); }
         };
@@ -39,7 +40,8 @@ namespace bt_communication {
         public:
             BtCommunicator &bt_communicator;
 
-            RxCharacteristicCallbacks(BtCommunicator &bt_communicator) : bt_communicator(bt_communicator) {}
+            RxCharacteristicCallbacks(BtCommunicator &bt_communicator) :
+                bt_communicator(bt_communicator) {}
             void onWrite(BLECharacteristic *characteristic) override { bt_communicator.on_write(characteristic); }
         };
 

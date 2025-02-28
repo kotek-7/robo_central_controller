@@ -18,21 +18,21 @@ namespace m3508_control::pid_controller {
         std::function<
             void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>
             remote_send_pid_fields
-    )
-        : kp(kp),
-          ki(ki),
-          kd(kd),
-          clamping_output(clamping_output),
-          angle(0),
-          rpm(0),
-          amp(0),
-          temp(0),
-          target_rpm(0),
-          integral(0),
-          previous_update(millis()),
-          previous_error(0),
-          remote_print(remote_print),
-          remote_send_pid_fields(remote_send_pid_fields) {}
+    ) :
+        kp(kp),
+        ki(ki),
+        kd(kd),
+        clamping_output(clamping_output),
+        angle(0),
+        rpm(0),
+        amp(0),
+        temp(0),
+        target_rpm(0),
+        integral(0),
+        previous_update(millis()),
+        previous_error(0),
+        remote_print(remote_print),
+        remote_send_pid_fields(remote_send_pid_fields) {}
 
     /// @brief フィードバック値を設定
     /// @param angle モータの現在の角度(°)
