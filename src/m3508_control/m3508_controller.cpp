@@ -96,10 +96,6 @@ namespace m3508_control {
 
     /// @brief M3508からのフィードバックを読み取って、PID制御器に設定
     void M3508Controller::set_feedback(const utils::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
-        if (rx_id <= 0x200 || rx_id > 0x204) {
-            return;
-        }
-
         C620Id rx_c620_id = static_cast<C620Id>(rx_id - 0x200);
 
         float angle;

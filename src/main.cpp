@@ -63,6 +63,9 @@ void setup() {
         });
 
         can_communicator->add_reveive_event_listener([&](const utils::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
+            if (rx_id <= 0x200 || rx_id > 0x204) {
+                return;
+            }
             m3508_controller->set_feedback(rx_id, rx_buf);
         });
     } catch (const std::exception &e) {
