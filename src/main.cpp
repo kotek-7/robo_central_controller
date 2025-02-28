@@ -33,27 +33,18 @@ void setup() {
         m3508_controller->setup();
 
         // Bluetooth通信の受信時のイベントハンドラとしてPIDゲインをセットする処理を追加
-        bt_communicator->add_write_event_listener([&](JsonDocument doc) {
-            if (doc["type"] != "setPidGains") {
-                return;
-            }
+        bt_communicator->add_write_event_listener("setPidGains", [&](JsonDocument doc) {
             m3508_controller->set_kp(doc["kp"].as<float>());
             m3508_controller->set_ki(doc["ki"].as<float>());
             m3508_controller->set_kd(doc["kd"].as<float>());
         });
         // Bluetooth通信の受信時のイベントハンドラとして制御目標値をセットする処理を追加
-        bt_communicator->add_write_event_listener([&](JsonDocument doc) {
-            if (doc["type"] != "setTargetRpm") {
-                return;
-            }
+        bt_communicator->add_write_event_listener("setTargetRpm", [&](JsonDocument doc) {
             m3508_controller->set_target_rpm(doc["targetRpm"].as<float>());
         });
 
-        bt_communicator->add_write_event_listener([&](JsonDocument doc) {
+        bt_communicator->add_write_event_listener("joystick", [&](JsonDocument doc) {
             constexpr float input_amp = 0.05;
-            if (doc["type"] != "joystick") {
-                return;
-            }
             if (doc["side"] != "l") {
                 return;
             }

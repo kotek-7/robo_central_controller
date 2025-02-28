@@ -38,7 +38,7 @@ namespace bt_communication {
         void remote_send_m3508_pid_fields(
             m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error
         );
-        void add_write_event_listener(std::function<void(JsonDocument doc)> listener);
+        void add_write_event_listener(String type, std::function<void(JsonDocument doc)> listener);
 
     private:
         /// @brief bluetoothデバイスが(1つ以上)接続されているか
@@ -53,7 +53,7 @@ namespace bt_communication {
         joystick_input::JoystickInput joystick_l_input;
         /// @brief 右のジョイスティック入力
         joystick_input::JoystickInput joystick_r_input;
-        std::vector<std::function<void(JsonDocument doc)>> on_write_event_listeners;
+        std::vector<std::pair<String, std::function<void(JsonDocument doc)>>> on_write_event_listeners;
 
         void on_connect(BLEServer *server);
         void on_disconnect(BLEServer *server);

@@ -73,7 +73,7 @@ namespace bt_communication {
         }
 
         // Bluetooth受信時にジョイスティック入力を読み取りモニターに転送するイベントリスナを登録
-        add_write_event_listener([this](JsonDocument doc) { this->set_and_forward_joystick_input(doc); });
+        add_write_event_listener("joystick", [this](JsonDocument doc) { this->set_and_forward_joystick_input(doc); });
 
         // 通信開始
         p_service->start();
@@ -136,7 +136,9 @@ namespace bt_communication {
 
         // 受信したデータを処理するイベントリスナを全部呼び出す
         for (auto listener : on_write_event_listeners) {
-            listener(doc);
+            if (listener.first == doc["type"]) {
+                listener.second(doc);
+            }
         }
     }
 
@@ -203,8 +205,8 @@ namespace bt_communication {
     }
 
     /// @brief BLEで受信したデータを処理するリスナーを追加
-    void BtCommunicator::add_write_event_listener(std::function<void(JsonDocument doc)> listener) {
-        on_write_event_listeners.push_back(listener);
+    void BtCommunicator::add_write_event_listener(String type, std::function<void(JsonDocument doc)> listener) {
+        on_write_event_listeners.push_back(std::make_pair(type, listener));
     }
 
     /// @brief モニターにジョイスティックの入力値を転送
@@ -233,11 +235,6 @@ namespace bt_communication {
     void BtCommunicator::set_and_forward_joystick_input(JsonDocument doc) {
         static uint32_t count = 0;
         count++;
-
-        // Bluetoothメッセージがジョイスティック入力値かどうかチェック
-        if (doc["type"] != "joystick") {
-            return;
-        }
 
         // ジョイスティックの入力値を取得して、メンバ変数に格納
         if (doc["side"] == "l") {
