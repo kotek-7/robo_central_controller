@@ -4,7 +4,7 @@ IndentWidth: 4
 TabWidth: 4
 AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: false
-ColumnLimit: 120
+ColumnLimit: 0
 AccessModifierOffset: -4
 NamespaceIndentation: All
 AlignAfterOpenBracket: BlockIndent
