@@ -78,13 +78,16 @@ namespace can {
         }
 
         for (const auto &listener : receive_event_listeners) {
-            listener(rx_id, rx_buf);
+            if (std::any_of(listener.first.begin(), listener.first.end(), [&rx_id](const utils::CanId &can_id) { return can_id == rx_id; })) {
+                listener.second(rx_id, rx_buf);
+            }
         }
     }
 
     void CanCommunicator::add_reveive_event_listener(
+        std::vector<utils::CanId> can_ids,
         std::function<void(const utils::CanId, const std::array<uint8_t, 8>)> listener
     ) {
-        receive_event_listeners.push_back(listener);
+        receive_event_listeners.push_back(std::make_pair(can_ids, listener));
     }
 } // namespace can
