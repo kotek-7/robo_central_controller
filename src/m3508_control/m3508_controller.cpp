@@ -88,8 +88,8 @@ namespace m3508_control {
         command_currents[2] = pid_controllers.at(C620Id::C3).update_output();
         command_currents[3] = pid_controllers.at(C620Id::C4).update_output();
 
-        uint8_t tx_buf[8];
-        milli_amperes_to_bytes(command_currents, tx_buf);
+        std::array<uint8_t, 8> tx_buf;
+        milli_amperes_to_bytes(command_currents, tx_buf.data());
 
         can_transmitter.transmit(CAN_ID, tx_buf);
     }
