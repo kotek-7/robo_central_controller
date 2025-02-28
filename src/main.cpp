@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include "m3508_control/m3508_controller.hpp"
 #include "bt_communication/bt_communicator.hpp"
+#include "can/can_communicator.hpp"
 
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
@@ -18,14 +19,17 @@ std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication
         bt_communicator->remote_send_m3508_pid_fields(c620_id, output, p, i, d, target_rpm, error);
     }
 ));
+/// CAN通信クラス
+std::unique_ptr<can::CanCommunicator> can_communicator(new can::CanCommunicator(*bt_interface));
 /// M3508モータの制御クラス
-std::unique_ptr<m3508_control::M3508Controller> m3508_controller(new m3508_control::M3508Controller(*bt_interface));
+std::unique_ptr<m3508_control::M3508Controller> m3508_controller(new m3508_control::M3508Controller(*bt_interface, *can_communicator));
 
 void setup() {
     Serial.begin(115200);
     randomSeed(0); // 乱数生成器のシード値を設定(高速化のため)
     try {
         bt_communicator->setup();
+        can_communicator->setup();
         m3508_controller->setup();
 
         // Bluetooth通信の受信時のイベントハンドラとしてPIDゲインをセットする処理を追加
@@ -57,6 +61,10 @@ void setup() {
                 utils::Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
             );
         });
+
+        can_communicator->add_reveive_event_listener([&](const utils::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
+            m3508_controller->set_feedback(rx_id, rx_buf);
+        });
     } catch (const std::exception &e) {
         Serial.print("Unhandled error in setup: ");
         Serial.println(e.what());
@@ -80,7 +88,7 @@ void loop() {
 
         // M3508からのフィードバック値を読み取り
         if (count % CAN_RECEIVE_INTERVAL == 0) {
-            m3508_controller->read_and_set_feedback();
+            can_communicator->receive();
         }
 
         // シリアル通信で制御目標値を読み取って設定

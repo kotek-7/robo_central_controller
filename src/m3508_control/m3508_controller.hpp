@@ -4,10 +4,9 @@
 #include "c620_id.hpp"
 #include "utils/vec2.hpp"
 #include "pid_controller/pid_controller.hpp"
+#include "can/can_transmitter.hpp"
 
 namespace m3508_control {
-    using CanId = uint32_t;
-
     /// @brief M3508モータの制御を行うクラス
     /// @details
     ///     M3508モータの制御を行うクラスです。
@@ -21,10 +20,10 @@ namespace m3508_control {
     ///     また、Bluetoothでモニタに様々な情報を送るためのBtInterfaceオブジェクトも持ちます。
     class M3508Controller {
     public:
-        M3508Controller(const bt_communication::BtInterface &bt_interface);
+        M3508Controller(const bt_communication::BtInterface &bt_interface, const can::CanTransmitter &can_transmitter);
         void setup();
         void send_currents();
-        void read_and_set_feedback();
+        void set_feedback(const utils::CanId rx_id, const std::array<uint8_t, 8> rx_buf);
         void read_serial_and_set_target_rpm();
 
         /// @brief PID制御器のpゲインを設定する
@@ -66,6 +65,7 @@ namespace m3508_control {
         int32_t command_currents[4];
 
         const bt_communication::BtInterface &bt_interface;
+        const can::CanTransmitter &can_transmitter;
 
         void milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]);
         void derive_feedback_fields(
