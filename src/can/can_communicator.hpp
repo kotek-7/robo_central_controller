@@ -14,7 +14,7 @@ namespace can {
         CanCommunicator(bt_communication::BtInterface &bt_interface);
 
         void setup();
-        void transmit(const can::CanId tx_id, const uint8_t tx_buf[8]) const override;
+        void transmit(const can::CanId tx_id, const std::array<uint8_t, 8> tx_buf) const override;
         void receive() const override;
         void add_reveive_event_listener(
             std::vector<can::CanId> can_ids, std::function<void(const can::CanId, const std::array<uint8_t, 8>)> listener

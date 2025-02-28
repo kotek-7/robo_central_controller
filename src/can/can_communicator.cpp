@@ -33,7 +33,7 @@ namespace can {
         }
     }
 
-    void CanCommunicator::transmit(const can::CanId tx_id, const uint8_t tx_buf[8]) const {
+    void CanCommunicator::transmit(const can::CanId tx_id, const std::array<uint8_t, 8> tx_buf) const {
         twai_message_t tx_message;
         tx_message.identifier = tx_id;
         tx_message.extd = 0;
