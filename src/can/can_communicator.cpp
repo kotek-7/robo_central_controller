@@ -33,7 +33,7 @@ namespace can {
         }
     }
 
-    void CanCommunicator::transmit(const utils::CanId tx_id, const uint8_t tx_buf[8]) {
+    void CanCommunicator::transmit(const utils::CanId tx_id, const uint8_t tx_buf[8]) const {
         twai_message_t tx_message;
         tx_message.identifier = tx_id;
         tx_message.extd = 0;
@@ -53,7 +53,7 @@ namespace can {
         }
     }
 
-    void CanCommunicator::receive() {
+    void CanCommunicator::receive() const {
         twai_message_t rx_message;
         const auto rx_result = twai_receive(&rx_message, 0);
         if (rx_result != ESP_OK) {
