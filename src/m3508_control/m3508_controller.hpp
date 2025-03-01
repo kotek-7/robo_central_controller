@@ -56,11 +56,13 @@ namespace m3508_control {
         };
 
         void set_target_velocity(const utils::Vec2 &target_velocity);
+        void set_target_angular_velocity(const float target_angular_velocity);
 
     private:
         /// @brief PID制御器(制御の核！)
         std::unordered_map<C620Id, m3508_control::pid_controller::PIDController, C620IdHash> pid_controllers;
         utils::Vec2 target_velocity;
+        float target_angular_velocity;
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
 
@@ -73,6 +75,7 @@ namespace m3508_control {
         );
         void calc_target_rpms(
             const utils::Vec2 &target_velocity,
+            const float target_angular_velocity,
             float *out_target_rpm_1,
             float *out_target_rpm_2,
             float *out_target_rpm_3,
