@@ -8,6 +8,9 @@ constexpr uint32_t CAN_SEND_INTERVAL = 20;
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
 constexpr uint32_t SERIAL_READ_INTERVAL = 100;
 
+void register_bt_event_handlers();
+void register_can_event_handlers();
+
 /// Bluetooth通信クラス
 std::unique_ptr<bt_communication::BtCommunicator> bt_communicator(new bt_communication::BtCommunicator());
 ///  Bluetoothでいろいろやり取りする関数をまとめたクラス
