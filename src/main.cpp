@@ -2,6 +2,7 @@
 #include "m3508_control/m3508_controller.hpp"
 #include "bt_communication/bt_communicator.hpp"
 #include "can/can_communicator.hpp"
+#include "can/can_tx_message_builder.hpp"
 
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
@@ -50,6 +51,99 @@ void setup() {
             }
             m3508_controller->set_target_velocity(
                 utils::Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
+            );
+        });
+
+        bt_communicator->add_write_event_listener("closeConeHand0", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::servo_cone)
+                    .set_command(0x00)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("openConeHand0", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::servo_cone)
+                    .set_command(0x01)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("closeConeHand0", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::servo_cone)
+                    .set_command(0x10)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("openConeHand0", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::servo_cone)
+                    .set_command(0x11)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("grabBall", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::servo_ball)
+                    .set_command(0x00)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("releaseBall", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::servo_ball)
+                    .set_command(0x01)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("throwBall", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::servo_ball)
+                    .set_command(0x02)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("moveConeHand0", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::dc_0)
+                    .set_command(0x00)
+                    .set_value(doc["value"].as<float>(), -100.0f, 100.0f)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("moveConeHand1", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::dc_1)
+                    .set_command(0x00)
+                    .set_value(doc["value"].as<float>(), -100.0f, 100.0f)
+                    .build()
+            );
+        });
+
+        bt_communicator->add_write_event_listener("moveBallHand", [&](JsonDocument doc) {
+            can_communicator->transmit(
+                can::CanTxMessageBuilder()
+                    .set_dest(can::CanDest::dc_2)
+                    .set_command(0x00)
+                    .set_value(doc["value"].as<float>(), -100.0f, 100.0f)
+                    .build()
             );
         });
 
