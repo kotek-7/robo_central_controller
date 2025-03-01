@@ -40,6 +40,11 @@ namespace can {
         constexpr int32_t max_int32 = 2147483647;
         constexpr int32_t min_int32 = -2147483648;
 
+        if (value < min_value || value > max_value) {
+            Serial.println("CanTxMessageBuilder::set_value: value is out of range");
+            return *this;
+        }
+
         const auto normalized_value = (value - min_value) / (max_value - min_value);
         const auto scaled_value = static_cast<int32_t>(0xFFFFFFFF * normalized_value + min_int32);
         const auto clamped_value = std::max(min_int32, std::min(max_int32, scaled_value)); // オーバーフローしない気はするけど一応の対策です
