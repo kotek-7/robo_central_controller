@@ -33,9 +33,9 @@ namespace can {
         }
     }
 
-    void CanCommunicator::transmit(const can::CanId tx_id, const std::array<uint8_t, 8> tx_buf) const {
+    void CanCommunicator::transmit(const CanTxMessage message) const {
         twai_message_t tx_message;
-        tx_message.identifier = tx_id;
+        tx_message.identifier = message.id;
         tx_message.extd = 0;
         tx_message.rtr = 0;
         tx_message.ss = 0;
@@ -43,7 +43,7 @@ namespace can {
         tx_message.dlc_non_comp = 0;
         tx_message.data_length_code = 8;
         for (uint8_t i = 0; i < 8; i++) {
-            tx_message.data[i] = tx_buf[i];
+            tx_message.data[i] = message.data[i];
         }
 
         const auto tx_result = twai_transmit(&tx_message, 0);

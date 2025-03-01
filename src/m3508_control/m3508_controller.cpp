@@ -91,7 +91,7 @@ namespace m3508_control {
         std::array<uint8_t, 8> tx_buf;
         milli_amperes_to_bytes(command_currents, tx_buf.data());
 
-        can_transmitter.transmit(CAN_ID, tx_buf);
+        can_transmitter.transmit(can::CanTxMessage(CAN_ID, tx_buf));
     }
 
     /// @brief M3508からのフィードバックを読み取って、PID制御器に設定

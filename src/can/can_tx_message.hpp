@@ -5,13 +5,10 @@
 namespace can {
     class CanTxMessage {
     public:
-        CanTxMessage(can::CanId id, std::array<uint8_t, 8> data);
+        CanTxMessage(can::CanId id, std::array<uint8_t, 8> data) :
+            id(id), data(data) {};
 
-    private:
         can::CanId id;
         std::array<uint8_t, 8> data;
     };
-
-    CanTxMessage::CanTxMessage(can::CanId id, std::array<uint8_t, 8> data) :
-        id(id), data(data) {}
 } // namespace can
