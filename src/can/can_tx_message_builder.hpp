@@ -1,12 +1,14 @@
 #pragma once
 
 #include "can_tx_message.hpp"
+#include "can_dest.hpp"
 
 namespace can {
     class CanTxMessageBuilder {
     public:
         CanTxMessageBuilder();
-        CanTxMessageBuilder &set_id(const can::CanId id);
+        CanTxMessageBuilder &set_id(const can::CanId id);  // set_destを上書きします
+        CanTxMessageBuilder &set_dest(const CanDest dest);  // set_idを上書きします
         CanTxMessageBuilder &set_command(const uint8_t command);
         CanTxMessageBuilder &set_value(const uint32_t value);
         CanTxMessageBuilder &set_value(const int32_t value);

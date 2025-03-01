@@ -10,6 +10,11 @@ namespace can {
         return *this;
     }
 
+    CanTxMessageBuilder &CanTxMessageBuilder::set_dest(const CanDest dest) {
+        this->id = static_cast<can::CanId>(dest);
+        return *this;
+    }
+
     CanTxMessageBuilder &CanTxMessageBuilder::set_command(const uint8_t command) {
         this->command = command;
         return *this;
