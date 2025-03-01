@@ -12,9 +12,9 @@ void register_bt_event_handlers();
 void register_can_event_handlers();
 
 /// Bluetooth通信クラス
-std::unique_ptr<bt_communication::BtCommunicator> bt_communicator(new bt_communication::BtCommunicator());
+auto bt_communicator = std::make_unique<bt_communication::BtCommunicator>();
 ///  Bluetoothでいろいろやり取りする関数をまとめたクラス
-std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication::BtInterface(
+auto bt_interface = std::make_unique<bt_communication::BtInterface>(
     [](String text) { bt_communicator->remote_print(text); },
     [](m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
         bt_communicator->remote_send_m3508_feedback(c620_id, angle, rpm, amp, temp);
@@ -22,11 +22,11 @@ std::unique_ptr<bt_communication::BtInterface> bt_interface(new bt_communication
     [](m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error) {
         bt_communicator->remote_send_m3508_pid_fields(c620_id, output, p, i, d, target_rpm, error);
     }
-));
+);
 /// CAN通信クラス
-std::unique_ptr<can::CanCommunicator> can_communicator(new can::CanCommunicator(*bt_interface));
+auto can_communicator = std::make_unique<can::CanCommunicator>(*bt_interface);
 /// M3508モータの制御クラス
-std::unique_ptr<m3508_control::M3508Controller> m3508_controller(new m3508_control::M3508Controller(*bt_interface, *can_communicator));
+auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_interface, *can_communicator);
 
 void setup() {
     Serial.begin(115200);
