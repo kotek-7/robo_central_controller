@@ -90,13 +90,16 @@ void register_bt_event_handlers() {
     });
 
     bt_communicator->add_write_event_listener("joystick", [&](JsonDocument doc) {
-        constexpr float input_amp = 0.05;
-        if (doc["side"] != "l") {
-            return;
+        if (doc["side"] == "l") {
+            constexpr float input_amp = 0.05;
+            m3508_controller->set_target_velocity(
+                utils::Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
+            );
         }
-        m3508_controller->set_target_velocity(
-            utils::Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
-        );
+        if (doc["side"] == "r") {
+            constexpr float input_amp = 1;
+            m3508_controller->set_target_angular_velocity(doc["leveledX"].as<float>() * input_amp);
+        }
     });
 
     bt_communicator->add_write_event_listener("closeConeHand0", [&](JsonDocument doc) {
