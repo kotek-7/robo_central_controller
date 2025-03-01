@@ -73,6 +73,7 @@ namespace m3508_control {
              )},
         }),
         target_velocity(utils::Vec2(0, 0)),
+        target_angular_velocity(0),
         command_currents{0, 0, 0, 0},
         bt_interface(bt_interface),
         can_transmitter(can_transmitter) {}
