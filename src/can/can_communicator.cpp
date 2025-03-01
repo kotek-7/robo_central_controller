@@ -59,6 +59,7 @@ namespace can {
         if (rx_result != ESP_OK) {
             Serial.println("Receive Fail: The RX queue is empty!");
             bt_interface.remote_print("Receive Fail: The RX queue is empty!");
+            return;
         }
         if (rx_message.rtr) {
             Serial.println("Receive Fail: The received message is a remote frame!");
