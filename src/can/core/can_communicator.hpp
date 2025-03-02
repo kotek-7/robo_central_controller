@@ -2,9 +2,9 @@
 
 #include <Arduino.h>
 #include <vector>
-#include "can_transmitter.hpp"
-#include "can_receiver.hpp"
-#include "bt_communication/bt_interface.hpp"
+#include "../interfaces/can_transmitter.hpp"
+#include "../interfaces/can_receiver.hpp"
+#include "bt_communication/interfaces/bt_interface.hpp"
 
 namespace can {
     using CanId = uint32_t;

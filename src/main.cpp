@@ -1,8 +1,8 @@
 #include <unordered_map>
-#include "m3508_control/m3508_controller.hpp"
-#include "bt_communication/bt_communicator.hpp"
-#include "can/can_communicator.hpp"
-#include "can/can_tx_message_builder.hpp"
+#include "m3508_control/core/m3508_controller.hpp"
+#include "bt_communication/core/bt_communicator.hpp"
+#include "can/core/can_communicator.hpp"
+#include "can/values/can_tx_message_builder.hpp"
 
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;

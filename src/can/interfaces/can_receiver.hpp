@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "can/can_id.hpp"
+#include "can/values/can_id.hpp"
 
 namespace can {
     class CanReceiver {

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <unordered_map>
-#include "c620_id.hpp"
+#include "../values/c620_id.hpp"
 #include "utils/vec2.hpp"
-#include "pid_controller/pid_controller.hpp"
-#include "can/can_transmitter.hpp"
+#include "../pid_controller/pid_controller.hpp"
+#include "can/core/can_communicator.hpp"
 
 namespace m3508_control {
     /// @brief M3508モータの制御を行うクラス

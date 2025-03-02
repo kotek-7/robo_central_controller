@@ -1,8 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "can/can_id.hpp"
-#include "can_tx_message.hpp"
+#include "../values/can_tx_message.hpp"
 
 namespace can {
     class CanTransmitter {

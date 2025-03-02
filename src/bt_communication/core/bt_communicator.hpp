@@ -7,8 +7,8 @@
 #include <BLEUtils.h>
 #include <ArduinoJson.h>
 #include <memory>
-#include "m3508_control/c620_id.hpp"
-#include "joystick_input.hpp"
+#include "m3508_control/values/c620_id.hpp"
+#include "../values/joystick_input.hpp"
 
 namespace bt_communication {
     /// @brief Bluetooth通信を行うクラス
