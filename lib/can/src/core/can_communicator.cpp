@@ -47,18 +47,59 @@ namespace can {
         }
 
         const auto tx_result = twai_transmit(&tx_message, 0);
+        if (tx_result == ESP_ERR_TIMEOUT) {
+            Serial.println("Transmit Fail: ESP_ERR_TIMEOUT");
+            bt_interface.remote_print("Transmit Fail: ESP_ERR_TIMEOUT");
+            return;
+        }
+        if (tx_result == ESP_ERR_INVALID_ARG) {
+            Serial.println("Transmit Fail: ESP_ERR_INVALID_ARG");
+            bt_interface.remote_print("Transmit Fail: ESP_ERR_INVALID_ARG");
+            return;
+        }
+        if (tx_result == ESP_ERR_INVALID_STATE) {
+            Serial.println("Transmit Fail: ESP_ERR_INVALID_STATE");
+            bt_interface.remote_print("Transmit Fail: ESP_ERR_INVALID_STATE");
+            return;
+        }
+        if (tx_result == ESP_FAIL) {
+            Serial.println("Transmit Fail: ESP_FAIL");
+            bt_interface.remote_print("Transmit Fail: ESP_FAIL");
+            return;
+        }
+        if (tx_result == ESP_ERR_NOT_SUPPORTED) {
+            Serial.println("Transmit Fail: ESP_ERR_NOT_SUPPORTED");
+            bt_interface.remote_print("Transmit Fail: ESP_ERR_NOT_SUPPORTED");
+            return;
+        }
         if (tx_result != ESP_OK) {
-            Serial.println("Transmit Fail: The TX queue is full!");
-            bt_interface.remote_print("Transmit Fail: The TX queue is full!");
+            Serial.println("Transmit Fail: Unexpected error: " + String(tx_result));
+            bt_interface.remote_print("Transmit Fail: Unexpected error: " + String(tx_result));
+            return;
         }
     }
 
     void CanCommunicator::receive() const {
         twai_message_t rx_message;
         const auto rx_result = twai_receive(&rx_message, 0);
+        if (rx_result == ESP_ERR_TIMEOUT) {
+            Serial.println("Receive fail: ESP_ERR_TIMEOUT");
+            bt_interface.remote_print("Receive fail: ESP_ERR_TIMEOUT");
+            return;
+        }
+        if (rx_result == ESP_ERR_INVALID_ARG) {
+            Serial.println("Receive fail: ESP_ERR_INVALID_ARG");
+            bt_interface.remote_print("Receive fail: ESP_ERR_INVALID_ARG");
+            return;
+        }
+        if (rx_result == ESP_ERR_INVALID_STATE) {
+            Serial.println("Receive fail: ESP_ERR_INVALID_STATE");
+            bt_interface.remote_print("Receive fail: ESP_ERR_INVALID_STATE");
+            return;
+        }
         if (rx_result != ESP_OK) {
-            Serial.println("Receive Fail: The RX queue is empty!");
-            bt_interface.remote_print("Receive Fail: The RX queue is empty!");
+            Serial.println("Receive fail: Unexpected error: " + String(rx_result));
+            bt_interface.remote_print("Receive fail: Unexpected error: " + String(rx_result));
             return;
         }
         if (rx_message.rtr) {
