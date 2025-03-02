@@ -1,8 +1,8 @@
 #include <unordered_map>
-#include "m3508_control/core/m3508_controller.hpp"
-#include "bt_communication/core/bt_communicator.hpp"
-#include "can/core/can_communicator.hpp"
-#include "can/values/can_tx_message_builder.hpp"
+#include <m3508_control/core.hpp>
+#include <bt_communication/core.hpp>
+#include <can/core.hpp>
+#include <can/peripheral.hpp>
 
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
@@ -99,7 +99,7 @@ void register_bt_event_handlers() {
         if (doc["side"] == "l") {
             constexpr float input_amp = 0.05;
             m3508_controller->set_target_velocity(
-                utils::Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
+                Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
             );
         }
         if (doc["side"] == "r") {
