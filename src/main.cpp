@@ -30,7 +30,6 @@ auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_int
 
 void setup() {
     Serial.begin(115200);
-    randomSeed(0); // 乱数生成器のシード値を設定(高速化のため)
     try {
         bt_communicator->setup();
         can_communicator->setup();
