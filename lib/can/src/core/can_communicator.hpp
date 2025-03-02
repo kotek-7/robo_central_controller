@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <vector>
-#include <bt_communication/interfaces/bt_interface.hpp>
+#include <bt_communication/peripheral.hpp>
 #include "../interfaces/can_transmitter.hpp"
 #include "../interfaces/can_receiver.hpp"
 

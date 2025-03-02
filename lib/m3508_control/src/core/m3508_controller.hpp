@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <can/core/can_communicator.hpp>
+#include <can/peripheral.hpp>
 #include <vec2.hpp>
 #include "../values/c620_id.hpp"
 #include "../pid_controller/pid_controller.hpp"

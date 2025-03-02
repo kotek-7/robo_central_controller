@@ -7,7 +7,7 @@
 #include <BLEUtils.h>
 #include <ArduinoJson.h>
 #include <memory>
-#include "m3508_control/values/c620_id.hpp"
+#include <m3508_control/peripheral.hpp>
 #include "../values/joystick_input.hpp"
 
 namespace bt_communication {
