@@ -4,16 +4,25 @@
 #include <can/core.hpp>
 #include <can/peripheral.hpp>
 
+/// @brief CANの送信間隔(=PIDの制御周期)[ms]
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
+/// @brief CANの受信(=PIDのFB受信間隔)間隔[ms]
 constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
+/// @brief シリアル通信の読み取り間隔[ms]
 constexpr uint32_t SERIAL_READ_INTERVAL = 100;
 
+/// @brief Bluetoothの受信イベントハンドラの登録を切り出した関数
 void register_bt_event_handlers();
+/// @brief CANの受信イベントハンドラの登録を切り出した関数
 void register_can_event_handlers();
 
-/// Bluetooth通信クラス
+// std::make_unique()
+// スマートポインタ(std::unique_ptr)を生成する。(ただのポインタよりメモリ安全)
+// ヒープ上に各種インスタンスを生成することで、スタック領域の消費を抑える目論見だが、
+// インスタンスがそんなに大きくないので普通にスタックに置いたほうが良いかも
+// 各インスタンスの役割はクラスの定義を参照
+
 auto bt_communicator = std::make_unique<bt_communication::BtCommunicator>();
-///  Bluetoothでいろいろやり取りする関数をまとめたクラス
 auto bt_interface = std::make_unique<bt_communication::BtInterface>(
     [](String text) { bt_communicator->remote_print(text); },
     [](m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp) {
@@ -23,13 +32,14 @@ auto bt_interface = std::make_unique<bt_communication::BtInterface>(
         bt_communicator->remote_send_m3508_pid_fields(c620_id, output, p, i, d, target_rpm, error);
     }
 );
-/// CAN通信クラス
 auto can_communicator = std::make_unique<can::CanCommunicator>(*bt_interface);
-/// M3508モータの制御クラス
 auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_interface, *can_communicator);
 
 void setup() {
     Serial.begin(115200);
+
+    // 最上位層でtry-catchでエラーをキャッチすることで、エラーが発生した場合でもプログラムが停止しないようにする目論見
+    // これでもなぜかときどきエラーでプログラム止まるのは謎
     try {
         bt_communicator->setup();
         can_communicator->setup();
@@ -45,25 +55,28 @@ void setup() {
 }
 
 void loop() {
-    static uint32_t count = 0;
+    // カウンタとif文を使って、一定周期で処理を行う。
+    // この方法はloop()内の関数がブロッキング動作(delay()など)を含まないように注意する必要がある。
+    // また、内部で非同期処理(マルチスレッドの処理)を行う場合には注意が必要。(Bluetooth通信ライブラリが非同期処理してる気がするけど、大丈夫かな…？)
+    // 処理が軽く、周期が超正確でなくてもいい場合には、順次処理が保証される上柔軟なのでいい感じ。
+
+    delay(1);
+    static uint32_t count = 0;  // ループ回数(≈経過時間)
     count++;
 
+    // setup()同様、try-catchでエラーをキャッチすることで、エラーが発生した場合でもプログラムが停止しないようにする目論見
     try {
         if (bt_communicator->is_device_connected()) {
-            // Bluetooth接続時の処理
         }
 
-        // 制御量をPIDで計算してM3508に送信
         if (count % CAN_SEND_INTERVAL == 0) {
             m3508_controller->send_currents();
         }
 
-        // M3508からのフィードバック値を読み取り
         if (count % CAN_RECEIVE_INTERVAL == 0) {
             can_communicator->receive();
         }
 
-        // シリアル通信で制御目標値を読み取って設定
         if (count % SERIAL_READ_INTERVAL == 0) {
             m3508_controller->read_serial_and_set_target_rpm();
         }
@@ -73,11 +86,10 @@ void loop() {
         bt_communicator->remote_print("Unhandled error in loop: " + String(e.what()));
     }
 
-    delay(1);
 }
 
 void register_bt_event_handlers() {
-    // Bluetooth通信の受信時のイベントハンドラとしてPIDゲインをセットする処理を追加
+    // PIDゲインのセット(PID調整画面で動作)
     bt_communicator->add_write_event_listener("setPidGains", [&](JsonDocument doc) {
         Serial.println("pid gains set!");
         bt_communicator->remote_print("pid gains set!");
@@ -86,7 +98,8 @@ void register_bt_event_handlers() {
         m3508_controller->set_ki(doc["ki"].as<float>());
         m3508_controller->set_kd(doc["kd"].as<float>());
     });
-    // Bluetooth通信の受信時のイベントハンドラとして制御目標値をセットする処理を追加
+
+    // 制御目標rpmのセット(PID調整画面で動作)
     bt_communicator->add_write_event_listener("setTargetRpm", [&](JsonDocument doc) {
         Serial.println("target rpm set!");
         bt_communicator->remote_print("target rpm set!");
@@ -94,6 +107,7 @@ void register_bt_event_handlers() {
         m3508_controller->set_target_rpm(doc["targetRpm"].as<float>());
     });
 
+    // ジョイスティック入力をM3508の目標速度にセット
     bt_communicator->add_write_event_listener("joystick", [&](JsonDocument doc) {
         if (doc["side"] == "l") {
             constexpr float input_amp = 0.05;
@@ -107,6 +121,7 @@ void register_bt_event_handlers() {
         }
     });
 
+    // ボタン押下でコーン用ハンド0を閉める
     bt_communicator->add_write_event_listener("closeConeHand0", [&](JsonDocument doc) {
         Serial.println("command: closeConeHand0");
         bt_communicator->remote_print("command: closeConeHand0");
@@ -118,6 +133,7 @@ void register_bt_event_handlers() {
         );
     });
 
+    // ボタン押下でコーン用ハンド0を開く
     bt_communicator->add_write_event_listener("openConeHand0", [&](JsonDocument doc) {
         Serial.println("command: openConeHand0");
         bt_communicator->remote_print("command: openConeHand0");
@@ -129,6 +145,7 @@ void register_bt_event_handlers() {
         );
     });
 
+    // ボタン押下でコーン用ハンド1を閉める
     bt_communicator->add_write_event_listener("closeConeHand1", [&](JsonDocument doc) {
         Serial.println("command: closeConeHand1");
         bt_communicator->remote_print("command: closeConeHand1");
@@ -140,6 +157,7 @@ void register_bt_event_handlers() {
         );
     });
 
+    // ボタン押下でコーン用ハンド1を開く
     bt_communicator->add_write_event_listener("openConeHand1", [&](JsonDocument doc) {
         Serial.println("command: openConeHand1");
         bt_communicator->remote_print("command: openConeHand1");
@@ -151,6 +169,7 @@ void register_bt_event_handlers() {
         );
     });
 
+    // ボタン押下でボール用ハンドを閉める
     bt_communicator->add_write_event_listener("grabBall", [&](JsonDocument doc) {
         Serial.println("command: grabBall");
         bt_communicator->remote_print("command: grabBall");
@@ -162,6 +181,7 @@ void register_bt_event_handlers() {
         );
     });
 
+    // ボタン押下でボール用ハンドを開く
     bt_communicator->add_write_event_listener("releaseBall", [&](JsonDocument doc) {
         Serial.println("command: releaseBall");
         bt_communicator->remote_print("command: releaseBall");
@@ -173,6 +193,7 @@ void register_bt_event_handlers() {
         );
     });
 
+    // ボタン押下でボールを投げる
     bt_communicator->add_write_event_listener("throwBall", [&](JsonDocument doc) {
         Serial.println("command: throwBall");
         bt_communicator->remote_print("command: throwBall");
