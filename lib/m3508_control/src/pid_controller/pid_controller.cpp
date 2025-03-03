@@ -4,11 +4,6 @@ namespace m3508_control::pid_controller {
     /// @brief pid値のデバッグ出力の間隔(ループ回数)
     constexpr uint8_t DEBUG_PRINT_INTERVAL = 10;
 
-    /// @brief PIDControllerクラスのコンストラクタ
-    /// @param kp pゲイン
-    /// @param ki iゲイン
-    /// @param kd dゲイン
-    /// @param clamping_output 最大出力(積分器のanti-windup用)
     PIDController::PIDController(
         const float kp,
         const float ki,
@@ -33,11 +28,6 @@ namespace m3508_control::pid_controller {
         bt_printer(bt_printer),
         remote_send_pid_fields(remote_send_pid_fields) {}
 
-    /// @brief フィードバック値を設定
-    /// @param angle モータの現在の角度(°)
-    /// @param rpm モータの現在の回転数(rpm)
-    /// @param amp モータに現在実際に流れている電流量(mA)
-    /// @param temp モータの現在の温度(℃)
     void PIDController::set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp) {
         static uint32_t count = 0;
         count++;
@@ -58,12 +48,8 @@ namespace m3508_control::pid_controller {
         }
     }
 
-    /// @brief 制御目標値を設定
-    /// @param target_rpm 制御目標値(rpm)
     void PIDController::set_target_rpm(const int16_t target_rpm) { this->target_rpm = target_rpm; }
 
-    /// @brief 内部状態からPID出力値を計算し、内部状態を更新
-    /// @return 出力値(mA)
     float PIDController::update_output() {
         static uint32_t count = 0;
         count++;
