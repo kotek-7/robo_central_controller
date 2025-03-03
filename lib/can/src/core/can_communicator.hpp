@@ -16,7 +16,7 @@ namespace can {
     ///     使う前にはsetup()関数を呼び出して初期化する必要があります。
     class CanCommunicator : public CanTransmitter, public CanReceiver {
     public:
-        CanCommunicator(bt_communication::BtInterface &bt_interface);
+        CanCommunicator(bt_communication::BtPrinter &bt_printer);
 
         /// @brief セットアップ処理。使う前に呼び出す！
         void setup();
@@ -35,6 +35,6 @@ namespace can {
             receive_event_listeners;
 
         /// @brief Bluetooth通信のインターフェース
-        bt_communication::BtInterface &bt_interface;
+        bt_communication::BtPrinter &bt_printer;
     };
 } // namespace can

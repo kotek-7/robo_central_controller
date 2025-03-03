@@ -32,7 +32,7 @@ auto bt_interface = std::make_unique<bt_communication::BtInterface>(
         bt_communicator->remote_send_m3508_pid_fields(c620_id, output, p, i, d, target_rpm, error);
     }
 );
-auto can_communicator = std::make_unique<can::CanCommunicator>(*bt_interface);
+auto can_communicator = std::make_unique<can::CanCommunicator>(*bt_communicator);
 auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_communicator, *bt_communicator, *can_communicator);
 
 void setup() {
