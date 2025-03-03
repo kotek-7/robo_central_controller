@@ -78,10 +78,6 @@ namespace m3508_control {
         bt_interface(bt_interface),
         can_transmitter(can_transmitter) {}
 
-    /// @brief 使う前に呼び出す！(CANの初期化など)
-    void M3508Controller::setup() {
-    }
-
     /// @brief PIDで電流値を計算してM3508にCANで送信
     void M3508Controller::send_currents() {
         command_currents[0] = pid_controllers.at(C620Id::C1).update_output();
@@ -95,7 +91,7 @@ namespace m3508_control {
         can_transmitter.transmit(can::CanTxMessage(CAN_ID, tx_buf));
     }
 
-    /// @brief M3508からのフィードバックを読み取って、PID制御器に設定
+    /// @brief CANで受信したM3508のフィードバック値をPID制御器にセット
     void M3508Controller::set_feedback(const can::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
         C620Id rx_c620_id = static_cast<C620Id>(rx_id - 0x200);
 

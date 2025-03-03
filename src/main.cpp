@@ -43,7 +43,6 @@ void setup() {
     try {
         bt_communicator->setup();
         can_communicator->setup();
-        m3508_controller->setup();
 
         register_bt_event_handlers();
         register_can_event_handlers();

@@ -21,7 +21,6 @@ namespace m3508_control {
     class M3508Controller {
     public:
         M3508Controller(const bt_communication::BtInterface &bt_interface, const can::CanTransmitter &can_transmitter);
-        void setup();
         void send_currents();
         void set_feedback(const can::CanId rx_id, const std::array<uint8_t, 8> rx_buf);
         void read_serial_and_set_target_rpm();
