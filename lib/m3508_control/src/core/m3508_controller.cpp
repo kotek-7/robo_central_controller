@@ -3,15 +3,14 @@
 
 // モータの制御処理
 namespace m3508_control {
-    constexpr gpio_num_t CAN_TX = GPIO_NUM_16;
-    constexpr gpio_num_t CAN_RX = GPIO_NUM_4;
+    // M3508モータのCAN送信ID
     constexpr uint16_t CAN_ID = 0x200;
 
     // PID制御用定数
     constexpr float KP = 0.7;
     constexpr float KI = 0.0005;
     constexpr float KD = 50;
-    constexpr float CLAMPING_OUTPUT = 2000;
+    constexpr float CLAMPING_OUTPUT = 2000; // 電流値のクランピング値 [mA]
 
     M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface, const can::CanTransmitter &can_transmitter) :
         pid_controllers({
@@ -78,7 +77,6 @@ namespace m3508_control {
         bt_interface(bt_interface),
         can_transmitter(can_transmitter) {}
 
-    /// @brief PIDで電流値を計算してM3508にCANで送信
     void M3508Controller::send_currents() {
         command_currents[0] = pid_controllers.at(C620Id::C1).update_output();
         command_currents[1] = pid_controllers.at(C620Id::C2).update_output();
@@ -91,7 +89,6 @@ namespace m3508_control {
         can_transmitter.transmit(can::CanTxMessage(CAN_ID, tx_buf));
     }
 
-    /// @brief CANで受信したM3508のフィードバック値をPID制御器にセット
     void M3508Controller::set_feedback(const can::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
         C620Id rx_c620_id = static_cast<C620Id>(rx_id - 0x200);
 
@@ -105,7 +102,6 @@ namespace m3508_control {
         bt_interface.remote_send_feedback(rx_c620_id, angle, rpm, amp, temp);
     }
 
-    /// @brief シリアル通信を読み取ってPIDの目標値を設定
     void M3508Controller::read_serial_and_set_target_rpm() {
         if (Serial.available()) {
             delay(1); // 一連のシリアル信号をすべて受信するまで待つ
@@ -125,6 +121,33 @@ namespace m3508_control {
         }
     }
 
+    void M3508Controller::set_kp(float p) {
+        pid_controllers.at(C620Id::C1).set_kp(p);
+        pid_controllers.at(C620Id::C2).set_kp(p);
+        pid_controllers.at(C620Id::C3).set_kp(p);
+        pid_controllers.at(C620Id::C4).set_kp(p);
+    };
+
+    void M3508Controller::set_ki(float i) {
+        pid_controllers.at(C620Id::C1).set_ki(i);
+        pid_controllers.at(C620Id::C2).set_ki(i);
+        pid_controllers.at(C620Id::C3).set_ki(i);
+        pid_controllers.at(C620Id::C4).set_ki(i);
+    };
+
+    void M3508Controller::set_kd(float d) {
+        pid_controllers.at(C620Id::C1).set_kd(d);
+        pid_controllers.at(C620Id::C2).set_kd(d);
+        pid_controllers.at(C620Id::C3).set_kd(d);
+        pid_controllers.at(C620Id::C4).set_kd(d);
+    };
+
+    void M3508Controller::set_target_rpm(float target_rpm) {
+        pid_controllers.at(C620Id::C1).set_target_rpm(target_rpm);
+        pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm);
+        pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm);
+        pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm);
+    };
     void M3508Controller::set_target_velocity(const Vec2 &target_velocity) {
         this->target_velocity = target_velocity;
 
@@ -147,10 +170,6 @@ namespace m3508_control {
         pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm_4);
     }
 
-    /// @brief 4つの電流値を、CANで速度コントローラに送信するデータへ変換
-    /// @param milli_amperes 4つの-20000\~20000の電流値(mA)を格納した配列
-    /// (要素番号と速度コントローラIDが対応)
-    /// @param out_tx_buf 結果の書き込み用配列
     void M3508Controller::milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]) {
         uint8_t i;
         for (i = 0; i < 4; i++) {
@@ -162,14 +181,6 @@ namespace m3508_control {
         }
     }
 
-    /// @brief 速度コントローラから受け取ったデータから、フィードバック値を導出
-    /// @param rx_buf CANで受信した配列
-    /// @param out_angle ロータの角度(0°\~360°) (結果書き込み用)
-    /// @param out_rpm 回転速度(rpm) (結果書き込み)
-    /// @param out_amp 実際のトルク電流(?) (結果書き込み用)
-    /// @param out_temp モータの温度(℃) (結果書き込み用)
-    ///
-    /// TODO: std::arrayを受け取るようにする
     void M3508Controller::derive_feedback_fields(
         const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp
     ) {
