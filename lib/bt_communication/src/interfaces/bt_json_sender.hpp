@@ -7,6 +7,6 @@ namespace bt_communication {
     public:
         virtual ~BtJsonSender() = default;
 
-        virtual void remote_send_json(JsonDocument doc) = 0;
+        virtual void remote_send_json(JsonDocument doc) const = 0;
     };
 } // namespace bt_communication

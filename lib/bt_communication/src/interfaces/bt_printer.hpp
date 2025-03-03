@@ -7,6 +7,6 @@ namespace bt_communication {
     public:
         virtual ~BtPrinter() = default;
 
-        virtual void remote_print(String text) = 0;
+        virtual void remote_print(String text) const = 0;
     };
 }

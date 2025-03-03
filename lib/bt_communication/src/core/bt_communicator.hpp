@@ -34,8 +34,8 @@ namespace bt_communication {
         /// @brief 右のジョイスティック入力を取得
         joystick_input::JoystickInput get_joystick_r_input() const { return joystick_r_input; }
 
-        void remote_send_json(JsonDocument doc) override;
-        void remote_print(String text) override;
+        void remote_send_json(JsonDocument doc) const override;
+        void remote_print(String text) const override;
         void remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
         void remote_send_m3508_pid_fields(
             m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error

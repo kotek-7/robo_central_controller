@@ -142,7 +142,7 @@ namespace bt_communication {
         }
     }
 
-    void BtCommunicator::remote_send_json(JsonDocument doc) {
+    void BtCommunicator::remote_send_json(JsonDocument doc) const {
         if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
@@ -155,7 +155,7 @@ namespace bt_communication {
     }
 
     /// @brief モニターのコンソールにテキストを送信
-    void BtCommunicator::remote_print(const String text) {
+    void BtCommunicator::remote_print(const String text) const {
         JsonDocument doc;
         doc["type"] = "print";
         doc["text"] = text;
