@@ -4,6 +4,7 @@
 
 namespace can
 {
+    /// @brief モジュールとCAN IDを対応させるenumです。
     enum class CanDest : can::CanId
     {
         central = 0x000,

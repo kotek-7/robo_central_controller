@@ -127,9 +127,9 @@ namespace can {
     }
 
     void CanCommunicator::add_reveive_event_listener(
-        std::vector<can::CanId> can_ids,
+        std::vector<can::CanId> listening_can_ids,
         std::function<void(const can::CanId, const std::array<uint8_t, 8>)> listener
     ) {
-        receive_event_listeners.push_back(std::make_pair(can_ids, listener));
+        receive_event_listeners.push_back(std::make_pair(listening_can_ids, listener));
     }
 } // namespace can
