@@ -1,6 +1,9 @@
 #pragma once
 
-/// @brief 2次元ベクトル
+/// @brief 
+///     2次元ベクトル
+///
+///     各種数値計算を提供します。
 class Vec2 {
 public:
     float x;
