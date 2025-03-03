@@ -9,6 +9,8 @@
 #include <memory>
 #include <m3508_control/peripheral.hpp>
 #include "../values/joystick_input.hpp"
+#include "../interfaces/bt_printer.hpp"
+#include "../interfaces/bt_json_sender.hpp"
 
 namespace bt_communication {
     /// @brief Bluetooth通信を行うクラス
@@ -20,7 +22,7 @@ namespace bt_communication {
     ///     Bluetooth通信の受信時のイベントハンドラを登録することもできます。
     ///
     ///     使う前にsetup()を呼び出して初期化する必要があります。
-    class BtCommunicator {
+    class BtCommunicator: public BtPrinter, public BtJsonSender {
     public:
         BtCommunicator();
         void setup();
@@ -32,9 +34,9 @@ namespace bt_communication {
         /// @brief 右のジョイスティック入力を取得
         joystick_input::JoystickInput get_joystick_r_input() const { return joystick_r_input; }
 
-        void remote_print(String text);
-        void
-        remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
+        void remote_send_json(JsonDocument doc) override;
+        void remote_print(String text) override;
+        void remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
         void remote_send_m3508_pid_fields(
             m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error
         );

@@ -142,31 +142,30 @@ namespace bt_communication {
         }
     }
 
-    /// @brief モニターのコンソールにテキストを送信
-    void BtCommunicator::remote_print(const String text) {
+    void BtCommunicator::remote_send_json(JsonDocument doc) {
         if (tx_characteristic == nullptr) {
             Serial.println("error: tx_characteristic is null");
             return;
         }
 
-        JsonDocument doc;
-        doc["type"] = "print";
-        doc["text"] = text;
         String tx_json_string;
         serializeJson(doc, tx_json_string);
         tx_characteristic->setValue(tx_json_string.c_str());
         tx_characteristic->notify();
     }
 
+    /// @brief モニターのコンソールにテキストを送信
+    void BtCommunicator::remote_print(const String text) {
+        JsonDocument doc;
+        doc["type"] = "print";
+        doc["text"] = text;
+        remote_send_json(doc);
+    }
+
     /// @brief モニターにモータのフィードバック値を送信
     void BtCommunicator::remote_send_m3508_feedback(
         m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp
     ) {
-        if (tx_characteristic == nullptr) {
-            Serial.println("error: tx_characteristic is null");
-            return;
-        }
-
         JsonDocument doc;
         doc["type"] = "m3508Feedback";
         doc["c620Id"] = static_cast<uint8_t>(c620_id);
@@ -174,21 +173,13 @@ namespace bt_communication {
         doc["rpm"] = rpm;
         doc["amp"] = amp;
         doc["temp"] = temp;
-        String tx_json_string;
-        serializeJson(doc, tx_json_string);
-        tx_characteristic->setValue(tx_json_string.c_str());
-        tx_characteristic->notify();
+        remote_send_json(doc);
     }
 
     /// @brief モニターにモータのpid制御値を送信
     void BtCommunicator::remote_send_m3508_pid_fields(
         m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error
     ) {
-        if (tx_characteristic == nullptr) {
-            Serial.println("error: tx_characteristic is null");
-            return;
-        }
-
         JsonDocument doc;
         doc["type"] = "m3508PidFields";
         doc["c620Id"] = static_cast<uint8_t>(c620_id);
@@ -198,10 +189,7 @@ namespace bt_communication {
         doc["d"] = d;
         doc["targetRpm"] = target_rpm;
         doc["error"] = error;
-        String tx_json_string;
-        serializeJson(doc, tx_json_string);
-        tx_characteristic->setValue(tx_json_string.c_str());
-        tx_characteristic->notify();
+        remote_send_json(doc);
     }
 
     /// @brief BLEで受信したデータを処理するリスナーを追加
@@ -211,11 +199,6 @@ namespace bt_communication {
 
     /// @brief モニターにジョイスティックの入力値を転送
     void BtCommunicator::remote_send_joystick_input(joystick_input::JoystickInput joystick_input, String side) {
-        if (tx_characteristic == nullptr) {
-            Serial.println("error: tx_characteristic is null");
-            return;
-        }
-
         JsonDocument doc;
         doc["type"] = "joystickInput";
         doc["side"] = side;
@@ -225,10 +208,7 @@ namespace bt_communication {
         doc["leveledY"] = joystick_input.get_leveled_input()->y;
         doc["distance"] = joystick_input.get_distance();
         doc["angle"] = joystick_input.get_angle();
-        String tx_json_string;
-        serializeJson(doc, tx_json_string);
-        tx_characteristic->setValue(tx_json_string.c_str());
-        tx_characteristic->notify();
+        remote_send_json(doc);
     }
 
     /// @brief ジョイスティックの入力値をメンバ変数に格納し、モニターに転送
