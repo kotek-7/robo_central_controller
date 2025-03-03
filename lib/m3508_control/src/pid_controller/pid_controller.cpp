@@ -91,12 +91,40 @@ namespace m3508_control::pid_controller {
         if (count % DEBUG_PRINT_INTERVAL == 0) {
             Serial.print("Output: \n");
             Serial.print(
-                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) + ", d: " + String(derivative) + ", current rpm: " + String(rpm) + "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
+                "output: "
+                + String(clamped_output)
+                + "mA, p: "
+                + String(proportional)
+                + ", i: "
+                + String(integral)
+                + ", d: "
+                + String(derivative)
+                + ", current rpm: "
+                + String(rpm)
+                + "rpm, target rpm: "
+                + String(target_rpm)
+                + "rpm, error: "
+                + String(error)
+                + "rpm"
             );
             Serial.print("\n\n");
             bt_printer.remote_print("Output: ");
             bt_printer.remote_print(
-                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) + ", d: " + String(derivative) + ", current rpm: " + String(rpm) + "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
+                "output: "
+                + String(clamped_output)
+                + "mA, p: "
+                + String(proportional)
+                + ", i: "
+                + String(integral)
+                + ", d: "
+                + String(derivative)
+                + ", current rpm: "
+                + String(rpm)
+                + "rpm, target rpm: "
+                + String(target_rpm)
+                + "rpm, error: "
+                + String(error)
+                + "rpm"
             );
         }
         remote_send_pid_fields(clamped_output, proportional, integral, derivative, target_rpm, error);
