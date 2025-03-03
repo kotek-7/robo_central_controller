@@ -14,9 +14,8 @@ namespace m3508_control::pid_controller {
         const float ki,
         const float kd,
         const float clamping_output,
-        std::function<void(String)> remote_print,
-        std::function<
-            void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>
+        const bt_communication::BtPrinter &bt_printer,
+        const std::function<void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>
             remote_send_pid_fields
     ) :
         kp(kp),
@@ -31,7 +30,7 @@ namespace m3508_control::pid_controller {
         integral(0),
         previous_update(millis()),
         previous_error(0),
-        remote_print(remote_print),
+        bt_printer(bt_printer),
         remote_send_pid_fields(remote_send_pid_fields) {}
 
     /// @brief フィードバック値を設定
@@ -39,8 +38,7 @@ namespace m3508_control::pid_controller {
     /// @param rpm モータの現在の回転数(rpm)
     /// @param amp モータに現在実際に流れている電流量(mA)
     /// @param temp モータの現在の温度(℃)
-    void
-    PIDController::set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp) {
+    void PIDController::set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp) {
         static uint32_t count = 0;
         count++;
         this->angle = angle;
@@ -50,14 +48,12 @@ namespace m3508_control::pid_controller {
         if (count % DEBUG_PRINT_INTERVAL == 0) {
             Serial.print("Feedback set: \n");
             Serial.print(
-                "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
-                "mA, temp: " + String(temp) + "deg C"
+                "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) + "mA, temp: " + String(temp) + "deg C"
             );
             Serial.print("\n\n");
-            remote_print("Feedback set: ");
-            remote_print(
-                "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) +
-                "mA, temp: " + String(temp) + "deg C"
+            bt_printer.remote_print("Feedback set: ");
+            bt_printer.remote_print(
+                "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) + "mA, temp: " + String(temp) + "deg C"
             );
         }
     }
@@ -95,16 +91,12 @@ namespace m3508_control::pid_controller {
         if (count % DEBUG_PRINT_INTERVAL == 0) {
             Serial.print("Output: \n");
             Serial.print(
-                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) +
-                ", d: " + String(derivative) + ", current rpm: " + String(rpm) +
-                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
+                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) + ", d: " + String(derivative) + ", current rpm: " + String(rpm) + "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
             );
             Serial.print("\n\n");
-            remote_print("Output: ");
-            remote_print(
-                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) +
-                ", d: " + String(derivative) + ", current rpm: " + String(rpm) +
-                "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
+            bt_printer.remote_print("Output: ");
+            bt_printer.remote_print(
+                "output: " + String(clamped_output) + "mA, p: " + String(proportional) + ", i: " + String(integral) + ", d: " + String(derivative) + ", current rpm: " + String(rpm) + "rpm, target rpm: " + String(target_rpm) + "rpm, error: " + String(error) + "rpm"
             );
         }
         remote_send_pid_fields(clamped_output, proportional, integral, derivative, target_rpm, error);

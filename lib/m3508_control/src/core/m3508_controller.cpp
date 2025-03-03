@@ -12,7 +12,11 @@ namespace m3508_control {
     constexpr float KD = 50;
     constexpr float CLAMPING_OUTPUT = 2000; // 電流値のクランピング値 [mA]
 
-    M3508Controller::M3508Controller(const bt_communication::BtInterface &bt_interface, const can::CanTransmitter &can_transmitter) :
+    M3508Controller::M3508Controller(
+        const bt_communication::BtJsonSender &bt_json_sender,
+        const bt_communication::BtPrinter &bt_printer,
+        const can::CanTransmitter &can_transmitter
+    ) :
         pid_controllers({
             {C620Id::C1,
              pid_controller::PIDController(
@@ -20,12 +24,18 @@ namespace m3508_control {
                  KI,
                  KD,
                  CLAMPING_OUTPUT,
-                 bt_interface.remote_print,
-                 [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
-                 ) {
-                     bt_interface.remote_send_pid_fields(
-                         C620Id::C1, output, proportional, integral, derivative, target_rpm, error
-                     );
+                 bt_printer,
+                 [&](float output, float proportional, float integral, float derivative, float target_rpm, float error) {
+                     JsonDocument doc;
+                     doc["type"] = "m3508PidFields";
+                     doc["c620Id"] = static_cast<uint8_t>(C620Id::C1);
+                     doc["output"] = output;
+                     doc["p"] = proportional;
+                     doc["i"] = integral;
+                     doc["d"] = derivative;
+                     doc["targetRpm"] = target_rpm;
+                     doc["error"] = error;
+                     bt_json_sender.remote_send_json(doc);
                  }
              )},
             {C620Id::C2,
@@ -34,12 +44,19 @@ namespace m3508_control {
                  KI,
                  KD,
                  CLAMPING_OUTPUT,
-                 bt_interface.remote_print,
+                 bt_printer,
                  [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
                  ) {
-                     bt_interface.remote_send_pid_fields(
-                         C620Id::C2, output, proportional, integral, derivative, target_rpm, error
-                     );
+                     JsonDocument doc;
+                     doc["type"] = "m3508PidFields";
+                     doc["c620Id"] = static_cast<uint8_t>(C620Id::C2);
+                     doc["output"] = output;
+                     doc["p"] = proportional;
+                     doc["i"] = integral;
+                     doc["d"] = derivative;
+                     doc["targetRpm"] = target_rpm;
+                     doc["error"] = error;
+                     bt_json_sender.remote_send_json(doc);
                  }
              )},
             {C620Id::C3,
@@ -48,12 +65,19 @@ namespace m3508_control {
                  KI,
                  KD,
                  CLAMPING_OUTPUT,
-                 bt_interface.remote_print,
+                 bt_printer,
                  [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
                  ) {
-                     bt_interface.remote_send_pid_fields(
-                         C620Id::C3, output, proportional, integral, derivative, target_rpm, error
-                     );
+                     JsonDocument doc;
+                     doc["type"] = "m3508PidFields";
+                     doc["c620Id"] = static_cast<uint8_t>(C620Id::C3);
+                     doc["output"] = output;
+                     doc["p"] = proportional;
+                     doc["i"] = integral;
+                     doc["d"] = derivative;
+                     doc["targetRpm"] = target_rpm;
+                     doc["error"] = error;
+                     bt_json_sender.remote_send_json(doc);
                  }
              )},
             {C620Id::C4,
@@ -62,19 +86,27 @@ namespace m3508_control {
                  KI,
                  KD,
                  CLAMPING_OUTPUT,
-                 bt_interface.remote_print,
+                 bt_printer,
                  [&](float output, float proportional, float integral, float derivative, float target_rpm, float error
                  ) {
-                     bt_interface.remote_send_pid_fields(
-                         C620Id::C4, output, proportional, integral, derivative, target_rpm, error
-                     );
+                     JsonDocument doc;
+                     doc["type"] = "m3508PidFields";
+                     doc["c620Id"] = static_cast<uint8_t>(C620Id::C4);
+                     doc["output"] = output;
+                     doc["p"] = proportional;
+                     doc["i"] = integral;
+                     doc["d"] = derivative;
+                     doc["targetRpm"] = target_rpm;
+                     doc["error"] = error;
+                     bt_json_sender.remote_send_json(doc);
                  }
              )},
         }),
         target_velocity(Vec2(0, 0)),
         target_angular_velocity(0),
         command_currents{0, 0, 0, 0},
-        bt_interface(bt_interface),
+        bt_json_sender(bt_json_sender),
+        bt_printer(bt_printer),
         can_transmitter(can_transmitter) {}
 
     void M3508Controller::send_currents() {
@@ -99,7 +131,7 @@ namespace m3508_control {
         derive_feedback_fields(rx_buf.data(), &angle, &rpm, &amp, &temp);
         pid_controllers.at(rx_c620_id).set_feedback_values(angle, rpm, amp, temp);
 
-        bt_interface.remote_send_feedback(rx_c620_id, angle, rpm, amp, temp);
+        remote_send_feedback(rx_c620_id, angle, rpm, amp, temp);
     }
 
     void M3508Controller::read_serial_and_set_target_rpm() {
@@ -117,7 +149,7 @@ namespace m3508_control {
             Serial.print("Set target rpm to: " + input_string);
             Serial.print("\n\n");
 
-            bt_interface.remote_print("Set target rpm to: " + input_string);
+            bt_printer.remote_print("Set target rpm to: " + input_string);
         }
     }
 
@@ -168,6 +200,19 @@ namespace m3508_control {
         pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm_2);
         pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm_3);
         pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm_4);
+    }
+
+    void M3508Controller::remote_send_feedback(
+        const C620Id c620_id, const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp
+    ) const {
+        JsonDocument doc;
+        doc["type"] = "m3508Feedback";
+        doc["c620Id"] = static_cast<uint8_t>(c620_id);
+        doc["angle"] = angle;
+        doc["rpm"] = rpm;
+        doc["amp"] = amp;
+        doc["temp"] = temp;
+        bt_json_sender.remote_send_json(doc);
     }
 
     void M3508Controller::milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]) {

@@ -21,7 +21,11 @@ namespace m3508_control {
     ///     M3508からのFBをCANで受信する処理は、外部で行われて、受信結果だけ渡されることを想定しています。
     class M3508Controller {
     public:
-        M3508Controller(const bt_communication::BtInterface &bt_interface, const can::CanTransmitter &can_transmitter);
+        M3508Controller(
+            const bt_communication::BtJsonSender &bt_json_sender,
+            const bt_communication::BtPrinter &bt_printer,
+            const can::CanTransmitter &can_transmitter
+        );
 
         /// @brief PIDで電流値を計算してM3508にCANで送信
         void send_currents();
@@ -69,10 +73,15 @@ namespace m3508_control {
         int32_t command_currents[4];
 
         /// @brief Bluetooth通信用のインターフェース
-        const bt_communication::BtInterface &bt_interface;
+        const bt_communication::BtJsonSender &bt_json_sender;
+        const bt_communication::BtPrinter &bt_printer;
 
         /// @brief CAN通信用のインターフェース
         const can::CanTransmitter &can_transmitter;
+
+        void remote_send_feedback(
+            C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp
+        ) const;
 
         /// @brief 4つの電流値を、CANで速度コントローラに送信するデータへ変換
         /// @param milli_amperes

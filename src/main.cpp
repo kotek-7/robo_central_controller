@@ -33,7 +33,7 @@ auto bt_interface = std::make_unique<bt_communication::BtInterface>(
     }
 );
 auto can_communicator = std::make_unique<can::CanCommunicator>(*bt_interface);
-auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_interface, *can_communicator);
+auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_communicator, *bt_communicator, *can_communicator);
 
 void setup() {
     Serial.begin(115200);
