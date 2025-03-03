@@ -47,7 +47,7 @@ namespace can {
 
         const auto normalized_value = (value - min_value) / (max_value - min_value);
         const auto scaled_value = static_cast<int32_t>(0xFFFFFFFF * normalized_value + min_int32);
-        const auto clamped_value = std::max(min_int32, std::min(max_int32, scaled_value)); // オーバーフローしない気はするけど一応の対策です
+        const auto clamped_value = std::clamp(scaled_value, min_int32, max_int32); // オーバーフローしない気はするけど一応の対策です
 
         return this->set_value(clamped_value);
     }

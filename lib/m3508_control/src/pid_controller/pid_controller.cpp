@@ -81,7 +81,7 @@ namespace m3508_control::pid_controller {
         // 出力値の計算
         const float raw_output = proportional + integral + derivative;
         // 出力値を制限
-        const float clamped_output = min(max(raw_output, -clamping_output), clamping_output);
+        const float clamped_output = std::clamp(raw_output, -clamping_output, clamping_output);
         // 積分器のanti-windup
         if (raw_output != clamped_output && (raw_output * error > 0)) {
             integral = 0;
