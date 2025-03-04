@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <driver/twai.h>
 #include <vector>
 #include <bt_communication/peripheral.hpp>
 #include "../interfaces/can_transmitter.hpp"
@@ -19,7 +20,7 @@ namespace can {
         CanCommunicator(bt_communication::BtPrinter &bt_printer);
 
         /// @brief セットアップ処理。使う前に呼び出す！
-        void setup();
+        void setup(twai_filter_config_t filter_config = TWAI_FILTER_CONFIG_ACCEPT_ALL());
         void transmit(const CanTxMessage message) const override;
         void receive() const override;
         void add_reveive_event_listener(
@@ -27,6 +28,9 @@ namespace can {
         ) override;
 
     private:
+        /// @brief CAN通信インスタンス
+        twai_handle_t twai_handle;
+
         /// @brief CAN受信時のイベントリスナのリスト
         std::vector<
             std::pair<
