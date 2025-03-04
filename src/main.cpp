@@ -29,6 +29,10 @@ auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_com
 void setup() {
     Serial.begin(115200);
 
+    // MOSFETの電源をON
+    pinMode(27, OUTPUT);
+    digitalWrite(27, HIGH);
+
     // 最上位層でtry-catchでエラーをキャッチすることで、エラーが発生した場合でもプログラムが停止しないようにする目論見
     // これでもなぜかときどきエラーでプログラム止まるのは謎
     try {
@@ -51,7 +55,7 @@ void loop() {
     // 処理が軽く、周期が超正確でなくてもいい場合には、順次処理が保証される上柔軟なのでいい感じ。
 
     delay(1);
-    static uint32_t count = 0;  // ループ回数(≈経過時間)
+    static uint32_t count = 0; // ループ回数(≈経過時間)
     count++;
 
     // setup()同様、try-catchでエラーをキャッチすることで、エラーが発生した場合でもプログラムが停止しないようにする目論見
@@ -75,7 +79,6 @@ void loop() {
         Serial.println(e.what());
         bt_communicator->remote_print("Unhandled error in loop: " + String(e.what()));
     }
-
 }
 
 void register_bt_event_handlers() {

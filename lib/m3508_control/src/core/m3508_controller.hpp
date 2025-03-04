@@ -29,24 +29,19 @@ namespace m3508_control {
 
         /// @brief PIDで電流値を計算してM3508にCANで送信
         void send_currents();
-
         /// @brief CANで受信したM3508のフィードバック値をPID制御器にセット (CAN通信の読み取りは行わない)
         /// @param rx_id CANで受信したメッセージのID
         /// @param rx_buf CANで受信したメッセージのデータ
         void set_feedback(const can::CanId rx_id, const std::array<uint8_t, 8> rx_buf);
-
         /// @brief シリアル通信を読み取ってPIDの目標値を設定
         void read_serial_and_set_target_rpm();
 
         /// @brief PID制御器のpゲインを設定する
         void set_kp(float p);
-
         /// @brief PID制御器のiゲインを設定する
         void set_ki(float i);
-
         /// @brief PID制御器のdゲインを設定する
         void set_kd(float d);
-
         /// @brief PID制御器の目標値(rpm)を設定する
         /// @param target_rpm 目標rpm [rpm]
         void set_target_rpm(float target_rpm);
@@ -54,7 +49,6 @@ namespace m3508_control {
         /// @brief 機体の目標速度を設定する
         /// @param target_velocity 機体の目標速度ベクトル [m/s]
         void set_target_velocity(const Vec2 &target_velocity);
-
         /// @brief 機体の目標角速度を設定する
         /// @param target_angular_velocity 機体の目標角速度 [deg/s]
         void set_target_angular_velocity(const float target_angular_velocity);
@@ -65,20 +59,21 @@ namespace m3508_control {
 
         /// @brief 機体の目標速度[m/s]
         Vec2 target_velocity;
-
         /// @brief 機体の目標角速度[deg/s]
         float target_angular_velocity;
 
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
 
-        /// @brief Bluetooth通信用のインターフェース
+        /// @brief 汎用Bluetooth通信用インスタンス
         const bt_communication::BtJsonSender &bt_json_sender;
+        /// @brief Bluetoothモニタにログを送るためのインスタンス
         const bt_communication::BtPrinter &bt_printer;
 
-        /// @brief CAN通信用のインターフェース
+        /// @brief CAN送信用のインスタンス
         const can::CanTransmitter &can_transmitter;
 
+        /// @brief BluetoothモニタにM3508のフィードバック値を送信
         void remote_send_feedback(
             C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp
         ) const;

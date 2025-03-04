@@ -30,9 +30,18 @@ namespace m3508_control::pid_controller {
         void set_ki(const float ki) { this->ki = ki; };
         /// @brief kdを設定する
         void set_kd(const float kd) { this->kd = kd; };
-
+        /// @brief フィードバック値を設定
+        /// @param angle モータの現在の角度(°)
+        /// @param rpm モータの現在の回転数(rpm)
+        /// @param amp モータに現在実際に流れている電流量(mA)
+        /// @param temp モータの現在の温度(℃)
         void set_feedback_values(const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp);
+        /// @brief 制御目標値を設定
+        /// @param target_rpm 制御目標値(rpm)
         void set_target_rpm(const int16_t target_rpm);
+
+        /// @brief 内部状態からPID出力値を計算し、内部状態を更新
+        /// @return 出力値(mA)
         float update_output();
 
     private:
