@@ -19,6 +19,9 @@ namespace m3508_control {
     ///     また、電流値を送信するためのCanTransmitterオブジェクトと、
     ///     Bluetoothでモニタに様々な情報を送るためのBtInterfaceオブジェクトも持ちます。
     ///     M3508からのFBをCANで受信する処理は、外部で行われて、受信結果だけ渡されることを想定しています。
+    /// @see 
+    ///     https://www.mouser.com/datasheet/2/744/RoboMaster_M3508_P19_Brushless_DC_Gear_Motor_V1.0-1551061.pdf
+    ///     https://www.mouser.com/datasheet/2/744/RoboMaster_C620_Brushless_DC_Motor_Speed_Controlle-1551090.pdf
     class M3508Controller {
     public:
         M3508Controller(

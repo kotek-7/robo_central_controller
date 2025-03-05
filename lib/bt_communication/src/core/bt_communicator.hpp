@@ -22,6 +22,7 @@ namespace bt_communication {
     ///     Bluetooth通信の受信時のイベントハンドラを登録することもできます。
     ///
     ///     使う前にsetup()を呼び出して初期化する必要があります。
+    /// @see https://docs.espressif.com/projects/esp-idf/en/v5.4/esp32/api-guides/ble/index.html
     class BtCommunicator: public BtPrinter, public BtJsonSender {
     public:
         BtCommunicator();
