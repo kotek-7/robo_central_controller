@@ -23,8 +23,9 @@ void register_can_event_handlers();
 // 各インスタンスの役割はクラスの定義を参照
 
 auto bt_communicator = std::make_unique<bt_communication::BtCommunicator>();
-auto can_communicator = std::make_unique<can::CanCommunicator>(*bt_communicator);
-auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_communicator, *bt_communicator, *can_communicator);
+auto general_can_communicator = std::make_unique<can::CanCommunicator>(*bt_communicator);   // 0x000のID受信用
+auto m3508_can_communicator = std::make_unique<can::CanCommunicator>(*bt_communicator);    // M3508からのFB受信用
+auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_communicator, *bt_communicator, *general_can_communicator);
 
 void setup() {
     Serial.begin(115200);
@@ -37,7 +38,16 @@ void setup() {
     // これでもなぜかときどきエラーでプログラム止まるのは謎
     try {
         bt_communicator->setup();
-        can_communicator->setup();
+
+        twai_filter_config_t general_filter_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+        general_filter_config.acceptance_mask = ~(0x7FF << 21);    // 0部分をマスクするため、~で反転させる (普通1部分をマスクでは…？)
+        general_filter_config.acceptance_code = (0x000 << 21);     // IDが0x000のものを受信
+        general_can_communicator->setup(general_filter_config);
+
+        twai_filter_config_t m3508_filter_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+        m3508_filter_config.acceptance_mask = ~(0x7 << 21);     // 最初の3bitをマスクする
+        m3508_filter_config.acceptance_code = (0x2 << 21);      // IDの最初の3bitが2のものを受信
+        m3508_can_communicator->setup(m3508_filter_config);
 
         register_bt_event_handlers();
         register_can_event_handlers();
@@ -68,7 +78,7 @@ void loop() {
         }
 
         if (count % CAN_RECEIVE_INTERVAL == 0) {
-            can_communicator->receive();
+            general_can_communicator->receive();
         }
 
         if (count % SERIAL_READ_INTERVAL == 0) {
@@ -118,7 +128,7 @@ void register_bt_event_handlers() {
     bt_communicator->add_write_event_listener("closeConeHand0", [&](JsonDocument doc) {
         Serial.println("command: closeConeHand0");
         bt_communicator->remote_print("command: closeConeHand0");
-        can_communicator->transmit(
+        general_can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_cone)
                 .set_command(0x00)
@@ -130,7 +140,7 @@ void register_bt_event_handlers() {
     bt_communicator->add_write_event_listener("openConeHand0", [&](JsonDocument doc) {
         Serial.println("command: openConeHand0");
         bt_communicator->remote_print("command: openConeHand0");
-        can_communicator->transmit(
+        general_can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_cone)
                 .set_command(0x01)
@@ -142,7 +152,7 @@ void register_bt_event_handlers() {
     bt_communicator->add_write_event_listener("closeConeHand1", [&](JsonDocument doc) {
         Serial.println("command: closeConeHand1");
         bt_communicator->remote_print("command: closeConeHand1");
-        can_communicator->transmit(
+        general_can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_cone)
                 .set_command(0x10)
@@ -154,7 +164,7 @@ void register_bt_event_handlers() {
     bt_communicator->add_write_event_listener("openConeHand1", [&](JsonDocument doc) {
         Serial.println("command: openConeHand1");
         bt_communicator->remote_print("command: openConeHand1");
-        can_communicator->transmit(
+        general_can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_cone)
                 .set_command(0x11)
@@ -166,7 +176,7 @@ void register_bt_event_handlers() {
     bt_communicator->add_write_event_listener("grabBall", [&](JsonDocument doc) {
         Serial.println("command: grabBall");
         bt_communicator->remote_print("command: grabBall");
-        can_communicator->transmit(
+        general_can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_ball)
                 .set_command(0x00)
@@ -178,7 +188,7 @@ void register_bt_event_handlers() {
     bt_communicator->add_write_event_listener("releaseBall", [&](JsonDocument doc) {
         Serial.println("command: releaseBall");
         bt_communicator->remote_print("command: releaseBall");
-        can_communicator->transmit(
+        general_can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_ball)
                 .set_command(0x01)
@@ -190,7 +200,7 @@ void register_bt_event_handlers() {
     bt_communicator->add_write_event_listener("throwBall", [&](JsonDocument doc) {
         Serial.println("command: throwBall");
         bt_communicator->remote_print("command: throwBall");
-        can_communicator->transmit(
+        general_can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_ball)
                 .set_command(0x02)
@@ -201,7 +211,7 @@ void register_bt_event_handlers() {
 
 void register_can_event_handlers() {
     // CAN通信の受信時のイベントハンドラとしてM3508のフィードバック値をBluetoothで送信する処理を追加
-    can_communicator->add_reveive_event_listener(
+    m3508_can_communicator->add_reveive_event_listener(
         {0x201, 0x202, 0x203, 0x204},
         [&](const can::CanId rx_id, const std::array<uint8_t, 8> rx_buf) {
             m3508_controller->set_feedback(rx_id, rx_buf);
