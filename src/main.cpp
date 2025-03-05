@@ -3,6 +3,7 @@
 #include <bt_communication/core.hpp>
 #include <can/core.hpp>
 #include <can/peripheral.hpp>
+#include <mpu6050_control/core.hpp>
 
 /// @brief CANの送信間隔(=PIDの制御周期)[ms]
 constexpr uint32_t CAN_SEND_INTERVAL = 20;
@@ -26,6 +27,7 @@ auto bt_communicator = std::make_unique<bt_communication::BtCommunicator>();
 auto general_can_communicator = std::make_unique<can::CanCommunicator>(*bt_communicator);   // 0x000のID受信用
 auto m3508_can_communicator = std::make_unique<can::CanCommunicator>(*bt_communicator);    // M3508からのFB受信用
 auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_communicator, *bt_communicator, *general_can_communicator);
+auto mpu6050_controller = std::make_unique<mpu6050_control::Mpu6050Controller>();
 
 void setup() {
     Serial.begin(115200);
@@ -48,6 +50,8 @@ void setup() {
         m3508_filter_config.acceptance_mask = ~(0x7 << 21);     // 最初の3bitをマスクする
         m3508_filter_config.acceptance_code = (0x2 << 21);      // IDの最初の3bitが2のものを受信
         m3508_can_communicator->setup(m3508_filter_config);
+
+        mpu6050_controller->setup();
 
         register_bt_event_handlers();
         register_can_event_handlers();
@@ -83,6 +87,10 @@ void loop() {
 
         if (count % SERIAL_READ_INTERVAL == 0) {
             m3508_controller->read_serial_and_set_target_rpm();
+        }
+
+        if (count % 10 == 0) {
+            mpu6050_controller->update();
         }
     } catch (const std::exception &e) {
         Serial.print("Unhandled error in loop: ");
