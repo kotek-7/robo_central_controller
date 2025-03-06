@@ -89,8 +89,9 @@ void loop() {
             m3508_controller->read_serial_and_set_target_rpm();
         }
 
-        if (count % 10 == 0) {
-            mpu6050_controller->update();
+        if (count % 100 == 0) {
+            float yaw = mpu6050_controller->get_yaw();
+            Serial.println("yaw: " + String(yaw));
         }
     } catch (const std::exception &e) {
         Serial.print("Unhandled error in loop: ");
