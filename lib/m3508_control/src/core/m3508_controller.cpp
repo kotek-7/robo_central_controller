@@ -10,7 +10,7 @@ namespace m3508_control {
     constexpr float KP = 0.7;
     constexpr float KI = 0.001;
     constexpr float KD = 50;
-    constexpr float CLAMPING_OUTPUT = 2000; // 電流値のクランピング値 [mA]
+    constexpr float CLAMPING_OUTPUT = 5000; // 電流値のクランピング値 [mA]
 
     M3508Controller::M3508Controller(
         const bt_communication::BtJsonSender &bt_json_sender,

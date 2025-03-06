@@ -121,7 +121,7 @@ void register_bt_event_handlers() {
     // ジョイスティック入力をM3508の目標速度にセット
     bt_communicator->add_write_event_listener("joystick", [&](JsonDocument doc) {
         if (doc["side"] == "l") {
-            constexpr float input_amp = 0.05;
+            constexpr float input_amp = 0.02;
             m3508_controller->set_target_velocity(
                 Vec2(doc["leveledX"].as<float>(), doc["leveledY"].as<float>()) * input_amp
             );
