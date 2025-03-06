@@ -250,11 +250,11 @@ namespace m3508_control {
 
         *out_target_rpm_1 = (one_over_root_2 * (-target_velocity.x + target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
-        *out_target_rpm_2 = (one_over_root_2 * (-target_velocity.x - target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
+        *out_target_rpm_2 = (one_over_root_2 * (target_velocity.x + target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
         *out_target_rpm_3 = (one_over_root_2 * (target_velocity.x - target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
-        *out_target_rpm_4 = (one_over_root_2 * (target_velocity.x + target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
+        *out_target_rpm_4 = (one_over_root_2 * (-target_velocity.x - target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
     }
 } // namespace m3508_control
