@@ -127,7 +127,7 @@ void register_bt_event_handlers() {
             );
         }
         if (doc["side"] == "r") {
-            constexpr float input_amp = 1;
+            constexpr float input_amp = 10;
             m3508_controller->set_target_angular_velocity(doc["leveledX"].as<float>() * input_amp);
         }
     });
