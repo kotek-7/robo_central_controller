@@ -5,10 +5,12 @@
 #include <can/peripheral.hpp>
 #include <mpu6050_control/core.hpp>
 
-/// @brief CANの送信間隔(=PIDの制御周期)[ms]
-constexpr uint32_t CAN_SEND_INTERVAL = 20;
-/// @brief CANの受信(=PIDのFB受信間隔)間隔[ms]
-constexpr uint32_t CAN_RECEIVE_INTERVAL = 20;
+/// @brief M3508へのCANの送信間隔(=PIDの制御周期)[ms]
+constexpr uint32_t M3508_SEND_INTERVAL = 20;
+/// @brief M3508からのCANの受信(=PIDのFB受信間隔)間隔[ms]
+constexpr uint32_t M3508_RECEIVE_INTERVAL = 20;
+/// @brief CAN通信の受信間隔[ms]
+constexpr uint32_t CAN_RECEIVE_INTERVAL = 100;
 /// @brief シリアル通信の読み取り間隔[ms]
 constexpr uint32_t SERIAL_READ_INTERVAL = 100;
 
@@ -77,8 +79,12 @@ void loop() {
         if (bt_communicator->is_device_connected()) {
         }
 
-        if (count % CAN_SEND_INTERVAL == 0) {
+        if (count % M3508_SEND_INTERVAL == 0) {
             m3508_controller->send_currents();
+        }
+
+        if (count % M3508_RECEIVE_INTERVAL == 0) {
+            m3508_can_communicator->receive();
         }
 
         if (count % CAN_RECEIVE_INTERVAL == 0) {
