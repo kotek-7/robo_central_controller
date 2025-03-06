@@ -8,7 +8,7 @@ namespace m3508_control {
 
     // PID制御用定数
     constexpr float KP = 0.7;
-    constexpr float KI = 0.0005;
+    constexpr float KI = 0.001;
     constexpr float KD = 50;
     constexpr float CLAMPING_OUTPUT = 2000; // 電流値のクランピング値 [mA]
 
