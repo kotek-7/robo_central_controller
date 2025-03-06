@@ -56,6 +56,10 @@ namespace m3508_control {
         /// @param target_angular_velocity 機体の目標角速度 [deg/s]
         void set_target_angular_velocity(const float target_angular_velocity);
 
+        /// @brief センサから読み取られた機体の現在のyaw角度を知らせる
+        /// @param yaw 機体のyaw角度 [deg]
+        void set_yaw(float yaw);
+
     private:
         /// @brief PID制御器(制御の核！)
         std::unordered_map<C620Id, m3508_control::pid_controller::PIDController, C620IdHash> pid_controllers;
@@ -64,6 +68,9 @@ namespace m3508_control {
         Vec2 target_velocity;
         /// @brief 機体の目標角速度[deg/s]
         float target_angular_velocity;
+
+        /// @brief センサから読み取られた機体の現在のyaw角度[deg]
+        float yaw;
 
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
@@ -103,6 +110,7 @@ namespace m3508_control {
         /// @brief 機体の目標速度と目標角速度から、各モータの目標rpmを計算
         /// @param target_velocity 機体の目標速度 [m/s]
         /// @param target_angular_velocity 機体の目標角速度 [deg/s]
+        /// @param current_yaw 機体の現在のyaw角度 [deg]
         /// @param out_target_rpm_1 モータ1の目標rpm (結果書き込み用)
         /// @param out_target_rpm_2 モータ2の目標rpm (結果書き込み用)
         /// @param out_target_rpm_3 モータ3の目標rpm (結果書き込み用)
@@ -110,6 +118,7 @@ namespace m3508_control {
         void calc_target_rpms(
             const Vec2 &target_velocity,
             const float target_angular_velocity,
+            const float current_yaw,
             float *out_target_rpm_1,
             float *out_target_rpm_2,
             float *out_target_rpm_3,

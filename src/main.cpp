@@ -92,6 +92,7 @@ void loop() {
         if (count % 100 == 0) {
             float yaw = mpu6050_controller->get_yaw();
             Serial.println("yaw: " + String(yaw));
+            bt_communicator->remote_print("yaw: " + String(yaw));
         }
     } catch (const std::exception &e) {
         Serial.print("Unhandled error in loop: ");

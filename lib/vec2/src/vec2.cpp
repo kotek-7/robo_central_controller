@@ -19,3 +19,10 @@ float Vec2::cross(const Vec2 &v) const { return x * v.y - y * v.x; }
 float Vec2::length() const { return std::sqrt(x * x + y * y); }
 
 Vec2 Vec2::normalized() const { return *this / length(); }
+
+Vec2 Vec2::rotate(float angle) const {
+    float rad = angle * M_PI / 180.0;
+    float cos_rad = std::cos(rad);
+    float sin_rad = std::sin(rad);
+    return Vec2(x * cos_rad - y * sin_rad, x * sin_rad + y * cos_rad);
+}

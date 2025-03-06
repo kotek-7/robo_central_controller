@@ -20,4 +20,9 @@ public:
     float cross(const Vec2 &v) const;
     float length() const;
     Vec2 normalized() const;
+
+    /// @brief ベクトルを回転
+    /// @param angle 回転角[deg]
+    /// @return 回転されたベクトル
+    Vec2 rotate(float angle) const;
 };
