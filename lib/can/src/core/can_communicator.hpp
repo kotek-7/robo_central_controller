@@ -15,6 +15,7 @@ namespace can {
     ///     CAN通信を行うクラスです。
     ///     CAN通信の送信と受信を行うためのCanTransmitterとCanReceiverを継承しています。
     ///     使う前にはsetup()関数を呼び出して初期化する必要があります。
+    ///     複数のインスタンスを生成して使うことはできません… (esp32が複数のCANコントローラをサポートしていないため)
     /// @see https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/twai.html
     class CanCommunicator : public CanTransmitter, public CanReceiver {
     public:
