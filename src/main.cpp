@@ -39,17 +39,7 @@ void setup() {
     // これでもなぜかときどきエラーでプログラム止まるのは謎
     try {
         bt_communicator->setup();
-
-        twai_filter_config_t general_filter_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
-        general_filter_config.acceptance_mask = ~(0x7FF << 21);    // 0部分をマスクするため、~で反転させる (普通1部分をマスクでは…？)
-        general_filter_config.acceptance_code = (0x000 << 21);     // IDが0x000のものを受信
-        can_communicator->setup(general_filter_config);
-
-        twai_filter_config_t m3508_filter_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
-        m3508_filter_config.acceptance_mask = ~(0x7 << 21);     // 最初の3bitをマスクする
-        m3508_filter_config.acceptance_code = (0x2 << 21);      // IDの最初の3bitが2のものを受信
-        can_communicator->setup(m3508_filter_config);
-
+        can_communicator->setup();
         mpu6050_controller->setup();
 
         register_bt_event_handlers();
