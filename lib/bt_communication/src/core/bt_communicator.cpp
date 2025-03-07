@@ -13,7 +13,7 @@ namespace bt_communication {
     constexpr const char *RX_CHARACTERISTIC_UUID = "8c83ffae-8421-4581-9755-10c5efd53d10";
 
     /// @brief ジョイスティック入力をモニターに転送する間隔(ループ回数)
-    constexpr const u_int8_t JOYSTICK_INPUT_FORWARD_INTERVAL = 10;
+    constexpr const u_int8_t JOYSTICK_INPUT_FORWARD_INTERVAL = 1000;
 
     BtCommunicator::BtCommunicator() :
         device_connected(false),
