@@ -29,8 +29,10 @@ namespace mpu6050_control {
         Serial.println("Calibrating gyro and accel..");
         mpu.CalibrateAccel(6);
         mpu.CalibrateGyro(6);
+        Serial.println("Calibration done.");
 
         mpu.setDMPEnabled(true);
+        Serial.println("DMP enabled.");
     }
 
     float Mpu6050Controller::get_yaw() {
