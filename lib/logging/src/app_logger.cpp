@@ -1,7 +1,7 @@
 #include "app_logger.hpp"
 
 namespace logging {
-    AppLogger::AppLogger(bt_communication::BtPrinter &bt_printer, bool enabled = true) :
+    AppLogger::AppLogger(bt_communication::BtPrinter &bt_printer, bool enabled) :
         enabled(enabled), bt_printer(bt_printer) {}
 
     void AppLogger::log(const char *message) const {
