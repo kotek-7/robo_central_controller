@@ -8,7 +8,7 @@ namespace m3508_control {
 
     // PID制御用定数
     constexpr float KP = 0.7;
-    constexpr float KI = 0.001;
+    constexpr float KI = 0.0005;
     constexpr float KD = 50;
     constexpr float CLAMPING_OUTPUT = 5000; // 電流値のクランピング値 [mA]
 
@@ -255,7 +255,7 @@ namespace m3508_control {
 
         const Vec2 rotated_target_velocity = target_velocity.rotate(-current_yaw);
 
-        *out_target_rpm_1 = (one_over_root_2 * (-rotated_target_velocity.x + target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
+        *out_target_rpm_1 = (one_over_root_2 * (-rotated_target_velocity.x + rotated_target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
         *out_target_rpm_2 = (one_over_root_2 * (rotated_target_velocity.x + rotated_target_velocity.y) + robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
