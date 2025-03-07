@@ -64,6 +64,9 @@ void loop() {
     // setup()同様、try-catchでエラーをキャッチすることで、エラーが発生した場合でもプログラムが停止しないようにする目論見
     try {
         if (bt_communicator->is_device_connected()) {
+            if (count % 100 == 0) {
+                mpu6050_controller->remote_send_yaw();
+            }
         }
 
         if (count % M3508_SEND_INTERVAL == 0) {
