@@ -3,6 +3,7 @@
 namespace m3508_control::pid_controller {
     /// @brief pid値のデバッグ出力の間隔(ループ回数)
     constexpr uint8_t DEBUG_PRINT_INTERVAL = 10;
+    constexpr uint8_t FEEDBACK_SEND_INTERVAL = 10;
 
     PIDController::PIDController(
         const float kp,
@@ -113,7 +114,10 @@ namespace m3508_control::pid_controller {
                 + "rpm"
             );
         }
-        remote_send_pid_fields(clamped_output, proportional, integral, derivative, target_rpm, error);
+
+        if (count % FEEDBACK_SEND_INTERVAL == 0) {
+            remote_send_pid_fields(clamped_output, proportional, integral, derivative, target_rpm, error);
+        }
 
         previous_error = error;
         previous_update = millis();

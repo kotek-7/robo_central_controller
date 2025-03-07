@@ -12,6 +12,8 @@ namespace m3508_control {
     constexpr float KD = 50;
     constexpr float CLAMPING_OUTPUT = 5000; // 電流値のクランピング値 [mA]
 
+    constexpr uint8_t FEEDBACK_SEND_INTERVAL = 10;
+
     M3508Controller::M3508Controller(
         const bt_communication::BtJsonSender &bt_json_sender,
         const bt_communication::BtPrinter &bt_printer,
@@ -131,7 +133,10 @@ namespace m3508_control {
         derive_feedback_fields(rx_buf.data(), &angle, &rpm, &amp, &temp);
         pid_controllers.at(rx_c620_id).set_feedback_values(angle, rpm, amp, temp);
 
-        remote_send_feedback(rx_c620_id, angle, rpm, amp, temp);
+        static uint32_t count = 0;
+        if (count % FEEDBACK_SEND_INTERVAL == 0) {
+            remote_send_feedback(rx_c620_id, angle, rpm, amp, temp);
+        }
     }
 
     void M3508Controller::read_serial_and_set_target_rpm() {

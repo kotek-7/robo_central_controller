@@ -1,6 +1,9 @@
 #include "can_communicator.hpp"
 
 namespace can {
+    /// @brief デバッグ出力の間隔(ループ回数)
+    constexpr uint8_t DEBUG_PRINT_INTERVAL = 10;
+
     constexpr gpio_num_t CAN_TX = GPIO_NUM_16;
     constexpr gpio_num_t CAN_RX = GPIO_NUM_4;
 
@@ -34,6 +37,8 @@ namespace can {
     }
 
     void CanCommunicator::transmit(const CanTxMessage message) const {
+        static uint32_t count = 0;
+
         twai_message_t tx_message;
         tx_message.identifier = message.id;
         tx_message.extd = 0;
@@ -47,70 +52,77 @@ namespace can {
         }
 
         const auto tx_result = twai_transmit_v2(twai_handle, &tx_message, 0);
-        if (tx_result == ESP_ERR_TIMEOUT) {
-            Serial.println("Transmit Fail: ESP_ERR_TIMEOUT");
-            bt_printer.remote_print("Transmit Fail: ESP_ERR_TIMEOUT");
-            return;
-        }
-        if (tx_result == ESP_ERR_INVALID_ARG) {
-            Serial.println("Transmit Fail: ESP_ERR_INVALID_ARG");
-            bt_printer.remote_print("Transmit Fail: ESP_ERR_INVALID_ARG");
-            return;
-        }
-        if (tx_result == ESP_ERR_INVALID_STATE) {
-            Serial.println("Transmit Fail: ESP_ERR_INVALID_STATE");
-            bt_printer.remote_print("Transmit Fail: ESP_ERR_INVALID_STATE");
-            return;
-        }
-        if (tx_result == ESP_FAIL) {
-            Serial.println("Transmit Fail: ESP_FAIL");
-            bt_printer.remote_print("Transmit Fail: ESP_FAIL");
-            return;
-        }
-        if (tx_result == ESP_ERR_NOT_SUPPORTED) {
-            Serial.println("Transmit Fail: ESP_ERR_NOT_SUPPORTED");
-            bt_printer.remote_print("Transmit Fail: ESP_ERR_NOT_SUPPORTED");
-            return;
-        }
-        if (tx_result != ESP_OK) {
-            Serial.println("Transmit Fail: Unexpected error: " + String(tx_result));
-            bt_printer.remote_print("Transmit Fail: Unexpected error: " + String(tx_result));
-            return;
+        if (count % DEBUG_PRINT_INTERVAL == 0) {
+            if (tx_result == ESP_ERR_TIMEOUT) {
+                Serial.println("Transmit Fail: ESP_ERR_TIMEOUT");
+                bt_printer.remote_print("Transmit Fail: ESP_ERR_TIMEOUT");
+                return;
+            }
+            if (tx_result == ESP_ERR_INVALID_ARG) {
+                Serial.println("Transmit Fail: ESP_ERR_INVALID_ARG");
+                bt_printer.remote_print("Transmit Fail: ESP_ERR_INVALID_ARG");
+                return;
+            }
+            if (tx_result == ESP_ERR_INVALID_STATE) {
+                Serial.println("Transmit Fail: ESP_ERR_INVALID_STATE");
+                bt_printer.remote_print("Transmit Fail: ESP_ERR_INVALID_STATE");
+                return;
+            }
+            if (tx_result == ESP_FAIL) {
+                Serial.println("Transmit Fail: ESP_FAIL");
+                bt_printer.remote_print("Transmit Fail: ESP_FAIL");
+                return;
+            }
+            if (tx_result == ESP_ERR_NOT_SUPPORTED) {
+                Serial.println("Transmit Fail: ESP_ERR_NOT_SUPPORTED");
+                bt_printer.remote_print("Transmit Fail: ESP_ERR_NOT_SUPPORTED");
+                return;
+            }
+            if (tx_result != ESP_OK) {
+                Serial.println("Transmit Fail: Unexpected error: " + String(tx_result));
+                bt_printer.remote_print("Transmit Fail: Unexpected error: " + String(tx_result));
+                return;
+            }
         }
     }
 
     void CanCommunicator::receive() const {
+        static uint32_t count = 0; 
+
         twai_message_t rx_message;
         const auto rx_result = twai_receive_v2(twai_handle, &rx_message, 0);
-        if (rx_result == ESP_ERR_TIMEOUT) {
-            Serial.println("Receive fail: ESP_ERR_TIMEOUT");
-            bt_printer.remote_print("Receive fail: ESP_ERR_TIMEOUT");
-            return;
-        }
-        if (rx_result == ESP_ERR_INVALID_ARG) {
-            Serial.println("Receive fail: ESP_ERR_INVALID_ARG");
-            bt_printer.remote_print("Receive fail: ESP_ERR_INVALID_ARG");
-            return;
-        }
-        if (rx_result == ESP_ERR_INVALID_STATE) {
-            Serial.println("Receive fail: ESP_ERR_INVALID_STATE");
-            bt_printer.remote_print("Receive fail: ESP_ERR_INVALID_STATE");
-            return;
-        }
-        if (rx_result != ESP_OK) {
-            Serial.println("Receive fail: Unexpected error: " + String(rx_result));
-            bt_printer.remote_print("Receive fail: Unexpected error: " + String(rx_result));
-            return;
-        }
-        if (rx_message.rtr) {
-            Serial.println("Receive Fail: The received message is a remote frame!");
-            bt_printer.remote_print("Receive Fail: The received message is a remote frame!");
-            return;
-        }
-        if (rx_message.extd) {
-            Serial.println("Receive Fail: The received message is an extended frame!");
-            bt_printer.remote_print("Receive Fail: The received message is an extended frame!");
-            return;
+
+        if (count % DEBUG_PRINT_INTERVAL == 0) {
+            if (rx_result == ESP_ERR_TIMEOUT) {
+                Serial.println("Receive fail: ESP_ERR_TIMEOUT");
+                bt_printer.remote_print("Receive fail: ESP_ERR_TIMEOUT");
+                return;
+            }
+            if (rx_result == ESP_ERR_INVALID_ARG) {
+                Serial.println("Receive fail: ESP_ERR_INVALID_ARG");
+                bt_printer.remote_print("Receive fail: ESP_ERR_INVALID_ARG");
+                return;
+            }
+            if (rx_result == ESP_ERR_INVALID_STATE) {
+                Serial.println("Receive fail: ESP_ERR_INVALID_STATE");
+                bt_printer.remote_print("Receive fail: ESP_ERR_INVALID_STATE");
+                return;
+            }
+            if (rx_result != ESP_OK) {
+                Serial.println("Receive fail: Unexpected error: " + String(rx_result));
+                bt_printer.remote_print("Receive fail: Unexpected error: " + String(rx_result));
+                return;
+            }
+            if (rx_message.rtr) {
+                Serial.println("Receive Fail: The received message is a remote frame!");
+                bt_printer.remote_print("Receive Fail: The received message is a remote frame!");
+                return;
+            }
+            if (rx_message.extd) {
+                Serial.println("Receive Fail: The received message is an extended frame!");
+                bt_printer.remote_print("Receive Fail: The received message is an extended frame!");
+                return;
+            }
         }
 
         const auto rx_id = rx_message.identifier;
