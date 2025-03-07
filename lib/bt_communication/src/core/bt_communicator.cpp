@@ -93,7 +93,6 @@ namespace bt_communication {
         Serial.println(String(connected_devices.size()));
         remote_print("connected devices: " + String(connected_devices.size()));
 
-        delay(500);
         server->startAdvertising(); // アドバタイズを再開して、更に複数のセントラルとの接続を受付
         Serial.println("restart advertising..");
         remote_print("restart advertising..");
@@ -112,11 +111,10 @@ namespace bt_communication {
         Serial.println(String(connected_devices.size()));
         remote_print("connected devices: " + String(connected_devices.size()));
 
-        delay(500);
         server->startAdvertising();
         Serial.println("start advertising..");
         remote_print("start advertising..");
-        device_connected = false;
+        device_connected = connected_devices.size() > 0;
     }
 
     /// @brief bluetooth通信の受信時の処理
@@ -159,36 +157,6 @@ namespace bt_communication {
         JsonDocument doc;
         doc["type"] = "print";
         doc["text"] = text;
-        remote_send_json(doc);
-    }
-
-    /// @brief モニターにモータのフィードバック値を送信
-    void BtCommunicator::remote_send_m3508_feedback(
-        m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp
-    ) {
-        JsonDocument doc;
-        doc["type"] = "m3508Feedback";
-        doc["c620Id"] = static_cast<uint8_t>(c620_id);
-        doc["angle"] = angle;
-        doc["rpm"] = rpm;
-        doc["amp"] = amp;
-        doc["temp"] = temp;
-        remote_send_json(doc);
-    }
-
-    /// @brief モニターにモータのpid制御値を送信
-    void BtCommunicator::remote_send_m3508_pid_fields(
-        m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error
-    ) {
-        JsonDocument doc;
-        doc["type"] = "m3508PidFields";
-        doc["c620Id"] = static_cast<uint8_t>(c620_id);
-        doc["output"] = output;
-        doc["p"] = p;
-        doc["i"] = i;
-        doc["d"] = d;
-        doc["targetRpm"] = target_rpm;
-        doc["error"] = error;
         remote_send_json(doc);
     }
 

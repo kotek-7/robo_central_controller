@@ -39,10 +39,6 @@ namespace bt_communication {
 
         void remote_send_json(JsonDocument doc) const override;
         void remote_print(String text) const override;
-        void remote_send_m3508_feedback(m3508_control::C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp);
-        void remote_send_m3508_pid_fields(
-            m3508_control::C620Id c620_id, float output, float p, float i, float d, float target_rpm, float error
-        );
         void add_write_event_listener(String type, std::function<void(JsonDocument doc)> listener);
 
     private:
