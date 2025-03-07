@@ -7,18 +7,18 @@ namespace log {
     class Logger {
     public:
         Logger(bool enabled = true, bt_communication::BtPrinter &bt_printer);
-        void println(const char *message) const;
-        void println(const String message) const;
-        void println(const uint64_t message) const;
-        void println(const int64_t message) const;
-        void println(const uint32_t message) const;
-        void println(const int32_t message) const;
-        void println(const uint16_t message) const;
-        void println(const int16_t message) const;
-        void println(const uint8_t message) const;
-        void println(const int8_t message) const;
-        void println(const float message) const;
-        void println(const double message) const;
+        void log(const char *message) const;
+        void log(const String message) const;
+        void log(const uint64_t message) const;
+        void log(const int64_t message) const;
+        void log(const uint32_t message) const;
+        void log(const int32_t message) const;
+        void log(const uint16_t message) const;
+        void log(const int16_t message) const;
+        void log(const uint8_t message) const;
+        void log(const int8_t message) const;
+        void log(const float message) const;
+        void log(const double message) const;
 
     private:
         bool enabled;
