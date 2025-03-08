@@ -76,6 +76,7 @@ namespace m3508_control::pid_controller {
 
         // ログ出力
         if (count % DEBUG_PRINT_INTERVAL == 0) {
+            #ifdef PID_DEBUG
             Serial.print("Output: \n");
             Serial.print(
                 "output: "
@@ -113,6 +114,7 @@ namespace m3508_control::pid_controller {
                 + String(error)
                 + "rpm"
             );
+            #endif
         }
 
         if (count % FEEDBACK_SEND_INTERVAL == 0) {

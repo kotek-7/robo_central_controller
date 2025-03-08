@@ -53,6 +53,7 @@ namespace can {
 
         const auto tx_result = twai_transmit_v2(twai_handle, &tx_message, 0);
         if (count % DEBUG_PRINT_INTERVAL == 0) {
+            #ifdef CAN_DEBUG
             if (tx_result == ESP_ERR_TIMEOUT) {
                 Serial.println("Transmit Fail: ESP_ERR_TIMEOUT");
                 bt_printer.remote_print("Transmit Fail: ESP_ERR_TIMEOUT");
@@ -83,6 +84,7 @@ namespace can {
                 bt_printer.remote_print("Transmit Fail: Unexpected error: " + String(tx_result));
                 return;
             }
+            #endif
         }
     }
 
@@ -93,6 +95,7 @@ namespace can {
         const auto rx_result = twai_receive_v2(twai_handle, &rx_message, 0);
 
         if (count % DEBUG_PRINT_INTERVAL == 0) {
+            #ifdef CAN_DEBUG
             if (rx_result == ESP_ERR_TIMEOUT) {
                 Serial.println("Receive fail: ESP_ERR_TIMEOUT");
                 bt_printer.remote_print("Receive fail: ESP_ERR_TIMEOUT");
@@ -123,6 +126,7 @@ namespace can {
                 bt_printer.remote_print("Receive Fail: The received message is an extended frame!");
                 return;
             }
+            #endif
         }
 
         const auto rx_id = rx_message.identifier;
