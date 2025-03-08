@@ -155,6 +155,39 @@ void register_bt_event_handlers() {
         );
     });
 
+    bt_communicator->add_write_event_listener("riseConeHand0", [&](JsonDocument doc) {
+        Serial.println("command: riseConeHand0");
+        bt_communicator->remote_print("command: riseConeHand0");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_0)
+                .set_command(0x00)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("declineConeHand0", [&](JsonDocument doc) {
+        Serial.println("command: declineConeHand0");
+        bt_communicator->remote_print("command: declineConeHand0");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_0)
+                .set_command(0x01)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("stopConeHand0", [&](JsonDocument doc) {
+        Serial.println("command: stopConeHand0");
+        bt_communicator->remote_print("command: stopConeHand0");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_0)
+                .set_command(0x02)
+                .build()
+        );
+    });
+
     // ボタン押下でコーン用ハンド1を閉める
     bt_communicator->add_write_event_listener("closeConeHand1", [&](JsonDocument doc) {
         Serial.println("command: closeConeHand1");
@@ -175,6 +208,39 @@ void register_bt_event_handlers() {
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_cone)
                 .set_command(0x11)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("riseConeHand1", [&](JsonDocument doc) {
+        Serial.println("command: riseConeHand1");
+        bt_communicator->remote_print("command: riseConeHand1");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_1)
+                .set_command(0x00)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("declineConeHand1", [&](JsonDocument doc) {
+        Serial.println("command: declineConeHand1");
+        bt_communicator->remote_print("command: declineConeHand1");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_1)
+                .set_command(0x01)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("stopConeHand1", [&](JsonDocument doc) {
+        Serial.println("command: stopConeHand1");
+        bt_communicator->remote_print("command: stopConeHand1");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_1)
+                .set_command(0x02)
                 .build()
         );
     });
@@ -210,6 +276,39 @@ void register_bt_event_handlers() {
         can_communicator->transmit(
             can::CanTxMessageBuilder()
                 .set_dest(can::CanDest::servo_ball)
+                .set_command(0x02)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("riseConeHand2", [&](JsonDocument doc) {
+        Serial.println("command: riseConeHand2");
+        bt_communicator->remote_print("command: riseConeHand2");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_2)
+                .set_command(0x00)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("declineConeHand2", [&](JsonDocument doc) {
+        Serial.println("command: declineConeHand2");
+        bt_communicator->remote_print("command: declineConeHand2");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_2)
+                .set_command(0x01)
+                .build()
+        );
+    });
+
+    bt_communicator->add_write_event_listener("stopConeHand2", [&](JsonDocument doc) {
+        Serial.println("command: stopConeHand2");
+        bt_communicator->remote_print("command: stopConeHand2");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::dc_2)
                 .set_command(0x02)
                 .build()
         );
