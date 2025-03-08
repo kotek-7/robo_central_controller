@@ -81,6 +81,11 @@ void loop() {
             m3508_controller->read_serial_and_set_target_rpm();
         }
 
+        if (count % 30 == 0) {
+            float yaw = mpu6050_controller->get_yaw();
+            m3508_controller->set_yaw(yaw);
+        }
+
         if (count % 100 == 0) {
             float yaw = mpu6050_controller->get_yaw();
             Serial.println("yaw: " + String(yaw));
