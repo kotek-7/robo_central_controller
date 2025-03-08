@@ -6,9 +6,9 @@
 #include <mpu6050_control/core.hpp>
 
 /// @brief M3508へのCANの送信間隔(=PIDの制御周期)[ms]
-constexpr uint32_t M3508_SEND_INTERVAL = 10;
+constexpr uint32_t M3508_SEND_INTERVAL = 6;
 /// @brief CAN通信の受信間隔(=PIDのFB受信間隔)間隔[ms]
-constexpr uint32_t CAN_RECEIVE_INTERVAL = 10;
+constexpr uint32_t CAN_RECEIVE_INTERVAL = 6;
 /// @brief シリアル通信の読み取り間隔[ms]
 constexpr uint32_t SERIAL_READ_INTERVAL = 100;
 
