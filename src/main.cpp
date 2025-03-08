@@ -26,7 +26,7 @@ void register_can_event_handlers();
 auto bt_communicator = std::make_unique<bt_communication::BtCommunicator>();
 auto can_communicator = std::make_unique<can::CanCommunicator>(*bt_communicator);   // 0x000のID受信用
 auto m3508_controller = std::make_unique<m3508_control::M3508Controller>(*bt_communicator, *bt_communicator, *can_communicator);
-auto mpu6050_controller = std::make_unique<mpu6050_control::Mpu6050Controller>();
+auto mpu6050_controller = std::make_unique<mpu6050_control::Mpu6050Controller>(*bt_communicator, *bt_communicator);
 
 void setup() {
     Serial.begin(115200);
