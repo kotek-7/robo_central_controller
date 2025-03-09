@@ -117,6 +117,7 @@ namespace m3508_control {
         /// @param target_velocity 機体の目標速度 [m/s]
         /// @param target_angular_velocity 機体の目標角速度 [deg/s]
         /// @param current_yaw 機体の現在のyaw角度 [deg]
+        /// @param current_yaw_velocity 機体の現在のyaw角速度 [deg/s]
         /// @param out_target_rpm_1 モータ1の目標rpm (結果書き込み用)
         /// @param out_target_rpm_2 モータ2の目標rpm (結果書き込み用)
         /// @param out_target_rpm_3 モータ3の目標rpm (結果書き込み用)
@@ -125,6 +126,7 @@ namespace m3508_control {
             const Vec2 &target_velocity,
             const float target_angular_velocity,
             const float current_yaw,
+            const float current_yaw_velocity,
             float *out_target_rpm_1,
             float *out_target_rpm_2,
             float *out_target_rpm_3,

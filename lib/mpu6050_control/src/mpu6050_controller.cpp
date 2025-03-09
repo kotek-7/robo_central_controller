@@ -59,11 +59,7 @@ namespace mpu6050_control {
     }
 
     float Mpu6050Controller::get_yaw_velocity() {
-        uint8_t fifo_buffer[64];
-        mpu.dmpGetCurrentFIFOPacket(fifo_buffer);
-        VectorInt16 gyro;
-        mpu.dmpGetGyro(&gyro, fifo_buffer);
-        return gyro.z;
+        return static_cast<float>(mpu.getRotationX()) * 250.0f / 32768.0f;
     }
 
     void Mpu6050Controller::remote_send_yaw() {
