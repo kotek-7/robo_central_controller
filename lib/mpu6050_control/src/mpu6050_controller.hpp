@@ -11,7 +11,11 @@ namespace mpu6050_control {
         Mpu6050Controller(const bt_communication::BtPrinter &bt_printer, const bt_communication::BtJsonSender &bt_json_sender);
         void setup();
 
+        /// @brief ジャイロセンサからyaw角度を取得 [deg]
         float get_yaw();
+        /// @brief ジャイロセンサからyaw角速度を取得 [deg/s]
+        float get_yaw_velocity();
+        /// @brief ジャイロセンサからyaw角度をBluetoothで送信
         void remote_send_yaw();
 
     private:

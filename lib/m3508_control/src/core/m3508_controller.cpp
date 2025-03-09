@@ -211,6 +211,10 @@ namespace m3508_control {
         this->yaw = yaw;
     }
 
+    void M3508Controller::set_yaw_velocity(float yaw_velocity) {
+        this->yaw_velocity = yaw_velocity;
+    }
+
     void M3508Controller::remote_send_feedback(
         const C620Id c620_id, const float angle, const int16_t rpm, const int16_t amp, const uint8_t temp
     ) const {

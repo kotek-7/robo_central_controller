@@ -86,10 +86,9 @@ void loop() {
             m3508_controller->set_yaw(yaw);
         }
 
-        if (count % 100 == 0) {
-            float yaw = mpu6050_controller->get_yaw();
-            Serial.println("yaw: " + String(yaw));
-            bt_communicator->remote_print("yaw: " + String(yaw));
+        if (count % 30 == 0) {
+            float yaw_velocity = mpu6050_controller->get_yaw_velocity();
+            m3508_controller->set_yaw_velocity(yaw_velocity);
         }
     } catch (const std::exception &e) {
         Serial.print("Unhandled error in loop: ");

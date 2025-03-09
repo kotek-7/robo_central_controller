@@ -59,6 +59,9 @@ namespace m3508_control {
         /// @brief センサから読み取られた機体の現在のyaw角度を知らせる
         /// @param yaw 機体のyaw角度 [deg]
         void set_yaw(float yaw);
+        /// @brief センサから読み取られた機体の現在のyaw角速度を知らせる
+        /// @param yaw_velocity 機体のyaw角速度 [deg/s]
+        void set_yaw_velocity(float yaw_velocity);
 
     private:
         /// @brief PID制御器(制御の核！)
@@ -71,6 +74,9 @@ namespace m3508_control {
 
         /// @brief センサから読み取られた機体の現在のyaw角度[deg]
         float yaw;
+
+        /// @brief センサから読み取られた機体の現在のyaw角速度[deg/s]
+        float yaw_velocity;
 
         /// @brief 送信する電流値(mA)のバッファ
         int32_t command_currents[4];
