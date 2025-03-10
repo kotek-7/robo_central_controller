@@ -264,7 +264,7 @@ namespace m3508_control {
         constexpr float robot_radius = 0.231f;            // ロボットの中心からホイールまでの距離(m)
 
         const Vec2 rotated_target_velocity = target_velocity.rotate(current_yaw);
-        const float adjusted_target_angular_velocity = target_angular_velocity - current_yaw_velocity;
+        const float adjusted_target_angular_velocity = target_angular_velocity + current_yaw_velocity;
 
         *out_target_rpm_1 = (one_over_root_2 * (-rotated_target_velocity.x + rotated_target_velocity.y) + robot_radius * adjusted_target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;

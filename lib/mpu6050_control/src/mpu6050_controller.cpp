@@ -59,7 +59,8 @@ namespace mpu6050_control {
     }
 
     float Mpu6050Controller::get_yaw_velocity() {
-        return static_cast<float>(mpu.getRotationX()) * 250.0f / 32768.0f;
+        float yaw_velocity = static_cast<float>(mpu.getRotationZ()) / 16.4; // ジャイロの感度スケールファクタに基づく
+        return yaw_velocity;
     }
 
     void Mpu6050Controller::remote_send_yaw() {
