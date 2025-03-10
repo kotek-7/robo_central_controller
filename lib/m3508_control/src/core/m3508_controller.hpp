@@ -89,6 +89,9 @@ namespace m3508_control {
         /// @brief CAN送信用のインスタンス
         const can::CanTransmitter &can_transmitter;
 
+        /// @brief 各PID制御器の目標rpmを現在の入力や機体の状態から計算
+        void update_target_rpms();
+
         /// @brief BluetoothモニタにM3508のフィードバック値を送信
         void remote_send_feedback(
             C620Id c620_id, float angle, int16_t rpm, int16_t amp, uint8_t temp

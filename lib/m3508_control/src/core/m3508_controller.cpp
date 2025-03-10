@@ -185,26 +185,15 @@ namespace m3508_control {
         pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm);
         pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm);
     };
+
     void M3508Controller::set_target_velocity(const Vec2 &target_velocity) {
         this->target_velocity = target_velocity;
-
-        float target_rpm_1, target_rpm_2, target_rpm_3, target_rpm_4;
-        calc_target_rpms(target_velocity, target_angular_velocity, yaw, yaw_velocity, &target_rpm_1, &target_rpm_2, &target_rpm_3, &target_rpm_4);
-        pid_controllers.at(C620Id::C1).set_target_rpm(target_rpm_1);
-        pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm_2);
-        pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm_3);
-        pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm_4);
+        update_target_rpms();
     }
 
     void M3508Controller::set_target_angular_velocity(const float target_angular_velocity) {
         this->target_angular_velocity = target_angular_velocity;
-
-        float target_rpm_1, target_rpm_2, target_rpm_3, target_rpm_4;
-        calc_target_rpms(target_velocity, target_angular_velocity, yaw, yaw_velocity, &target_rpm_1, &target_rpm_2, &target_rpm_3, &target_rpm_4);
-        pid_controllers.at(C620Id::C1).set_target_rpm(target_rpm_1);
-        pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm_2);
-        pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm_3);
-        pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm_4);
+        update_target_rpms();
     }
 
     void M3508Controller::set_yaw(float yaw) {
@@ -213,6 +202,15 @@ namespace m3508_control {
 
     void M3508Controller::set_yaw_velocity(float yaw_velocity) {
         this->yaw_velocity = yaw_velocity;
+    }
+
+    void M3508Controller::update_target_rpms() {
+        float target_rpm_1, target_rpm_2, target_rpm_3, target_rpm_4;
+        calc_target_rpms(target_velocity, target_angular_velocity, yaw, yaw_velocity, &target_rpm_1, &target_rpm_2, &target_rpm_3, &target_rpm_4);
+        pid_controllers.at(C620Id::C1).set_target_rpm(target_rpm_1);
+        pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm_2);
+        pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm_3);
+        pid_controllers.at(C620Id::C4).set_target_rpm(target_rpm_4);
     }
 
     void M3508Controller::remote_send_feedback(
