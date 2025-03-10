@@ -125,7 +125,7 @@ void register_bt_event_handlers() {
             );
         }
         if (doc["side"] == "r") {
-            constexpr float input_amp = 15;
+            constexpr float input_amp = -15;    // →で時計回り、←で反時計回りに回したいのでマイナス
             m3508_controller->set_target_angular_velocity(doc["leveledX"].as<float>() * input_amp);
         }
     });
