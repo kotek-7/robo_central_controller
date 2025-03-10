@@ -226,7 +226,7 @@ namespace m3508_control {
         bt_json_sender.remote_send_json(doc);
     }
 
-    void M3508Controller::milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]) {
+    void M3508Controller::milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]) const {
         uint8_t i;
         for (i = 0; i < 4; i++) {
             int32_t milli_ampere = milli_amperes[i] * 16384 / 20000;
@@ -239,7 +239,7 @@ namespace m3508_control {
 
     void M3508Controller::derive_feedback_fields(
         const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp
-    ) {
+    ) const {
         *out_angle = (float)(rx_buf[0] << 8 | rx_buf[1]) * 360.0f / 8191.0f;
         *out_rpm = rx_buf[2] << 8 | rx_buf[3];
         *out_amp = rx_buf[4] << 8 | rx_buf[5];
@@ -255,7 +255,7 @@ namespace m3508_control {
         float *out_target_rpm_2,
         float *out_target_rpm_3,
         float *out_target_rpm_4
-    ) {
+    ) const {
         constexpr float one_over_root_2 = 0.70710678118f; // 1.0 / sqrt(2.0)
         constexpr float wheel_radius = 0.051f;            // 車輪の半径(m)
         constexpr float reduction_ratio = 19.2032085561;  // 減速比

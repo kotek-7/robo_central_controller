@@ -102,7 +102,7 @@ namespace m3508_control {
         ///     4つの-20000\~20000の電流値(mA)を格納した配列
         ///     (要素番号と速度コントローラIDが対応)
         /// @param out_tx_buf 結果の書き込み用配列
-        void milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]);
+        void milli_amperes_to_bytes(const int32_t milli_amperes[4], uint8_t out_tx_buf[8]) const;
 
         /// @brief 速度コントローラから受け取ったデータから、フィードバック値を導出
         /// @param rx_buf CANで受信した配列
@@ -114,7 +114,7 @@ namespace m3508_control {
         /// TODO: std::arrayを受け取るようにする
         void derive_feedback_fields(
             const uint8_t rx_buf[8], float *out_angle, int16_t *out_rpm, int16_t *out_amp, uint8_t *out_temp
-        );
+        ) const;
 
         /// @brief 機体の目標速度と目標角速度から、各モータの目標rpmを計算
         /// @param target_velocity 機体の目標速度 [m/s]
@@ -134,6 +134,6 @@ namespace m3508_control {
             float *out_target_rpm_2,
             float *out_target_rpm_3,
             float *out_target_rpm_4
-        );
+        ) const;
     };
 } // namespace m3508_control
