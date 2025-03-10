@@ -70,6 +70,8 @@ namespace m3508_control::pid_controller {
         uint32_t previous_update;
         float previous_error;
 
+        uint32_t update_count;
+
         const bt_communication::BtPrinter &bt_printer;
         std::function<void(float output, float proportional, float integral, float derivative, float target_rpm, float error)>
             remote_send_pid_fields;

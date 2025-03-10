@@ -26,6 +26,7 @@ namespace m3508_control::pid_controller {
         integral(0),
         previous_update(millis()),
         previous_error(0),
+        update_count(0),
         bt_printer(bt_printer),
         remote_send_pid_fields(remote_send_pid_fields) {}
 
@@ -52,9 +53,6 @@ namespace m3508_control::pid_controller {
     void PIDController::set_target_rpm(const int16_t target_rpm) { this->target_rpm = target_rpm; }
 
     float PIDController::update_output() {
-        static uint32_t count = 0;
-        count++;
-
         const uint32_t dt = millis() - previous_update;
         const float error = static_cast<float>(target_rpm - rpm);
 
@@ -75,7 +73,7 @@ namespace m3508_control::pid_controller {
         }
 
         // ログ出力
-        if (count % DEBUG_PRINT_INTERVAL == 0) {
+        if (update_count % DEBUG_PRINT_INTERVAL == 0) {
             #ifdef PID_DEBUG
             Serial.print("Output: \n");
             Serial.print(
@@ -117,7 +115,7 @@ namespace m3508_control::pid_controller {
             #endif
         }
 
-        if (count % FEEDBACK_SEND_INTERVAL == 0) {
+        if (update_count % FEEDBACK_SEND_INTERVAL == 0) {
             remote_send_pid_fields(clamped_output, proportional, integral, derivative, target_rpm, error);
         }
 
