@@ -104,19 +104,18 @@ namespace m3508_control {
                  }
              )},
         }),
+        angular_velocity_pid_controller(1, 0, 0, 250, bt_printer),
         target_velocity(Vec2(0, 0)),
-        target_angular_velocity(0),
         command_currents{0, 0, 0, 0},
         bt_json_sender(bt_json_sender),
         bt_printer(bt_printer),
         can_transmitter(can_transmitter) {}
 
     void M3508Controller::send_currents() {
-        command_currents[0] = pid_controllers.at(C620Id::C1).update_output();
-        command_currents[1] = pid_controllers.at(C620Id::C2).update_output();
-        command_currents[2] = pid_controllers.at(C620Id::C3).update_output();
-        command_currents[3] = pid_controllers.at(C620Id::C4).update_output();
-
+        update_target_rpms();
+        for (auto &pid_controller : pid_controllers) {
+            command_currents[static_cast<uint8_t>(pid_controller.first) - 1] = pid_controller.second.update_output();
+        }
         std::array<uint8_t, 8> tx_buf;
         milli_amperes_to_bytes(command_currents, tx_buf.data());
 
@@ -192,8 +191,7 @@ namespace m3508_control {
     }
 
     void M3508Controller::set_target_angular_velocity(const float target_angular_velocity) {
-        this->target_angular_velocity = target_angular_velocity;
-        update_target_rpms();
+        angular_velocity_pid_controller.set_target_value(target_angular_velocity);
     }
 
     void M3508Controller::set_yaw(float yaw) {
@@ -201,12 +199,13 @@ namespace m3508_control {
     }
 
     void M3508Controller::set_yaw_velocity(float yaw_velocity) {
-        this->yaw_velocity = yaw_velocity;
+        angular_velocity_pid_controller.set_feedback_value(yaw_velocity);
     }
 
     void M3508Controller::update_target_rpms() {
+        float command_angular_velocity = angular_velocity_pid_controller.update_output();
         float target_rpm_1, target_rpm_2, target_rpm_3, target_rpm_4;
-        calc_target_rpms(target_velocity, target_angular_velocity, yaw, yaw_velocity, &target_rpm_1, &target_rpm_2, &target_rpm_3, &target_rpm_4);
+        calc_target_rpms(target_velocity, command_angular_velocity, yaw, &target_rpm_1, &target_rpm_2, &target_rpm_3, &target_rpm_4);
         pid_controllers.at(C620Id::C1).set_target_rpm(target_rpm_1);
         pid_controllers.at(C620Id::C2).set_target_rpm(target_rpm_2);
         pid_controllers.at(C620Id::C3).set_target_rpm(target_rpm_3);
@@ -250,7 +249,6 @@ namespace m3508_control {
         const Vec2 &target_velocity,
         const float target_angular_velocity,
         const float current_yaw,
-        const float current_yaw_velocity,
         float *out_target_rpm_1,
         float *out_target_rpm_2,
         float *out_target_rpm_3,
@@ -262,15 +260,14 @@ namespace m3508_control {
         constexpr float robot_radius = 0.231f;            // ロボットの中心からホイールまでの距離(m)
 
         const Vec2 rotated_target_velocity = target_velocity.rotate(current_yaw);
-        const float corrected_target_angular_velocity = target_angular_velocity - current_yaw_velocity;
 
-        *out_target_rpm_1 = (one_over_root_2 * (rotated_target_velocity.x - rotated_target_velocity.y) - robot_radius * corrected_target_angular_velocity / 180 * M_PI)
+        *out_target_rpm_1 = (one_over_root_2 * (rotated_target_velocity.x - rotated_target_velocity.y) - robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
-        *out_target_rpm_2 = (one_over_root_2 * (-rotated_target_velocity.x - rotated_target_velocity.y) - robot_radius * corrected_target_angular_velocity / 180 * M_PI)
+        *out_target_rpm_2 = (one_over_root_2 * (-rotated_target_velocity.x - rotated_target_velocity.y) - robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
-        *out_target_rpm_3 = (one_over_root_2 * (-rotated_target_velocity.x + rotated_target_velocity.y) - robot_radius * corrected_target_angular_velocity / 180 * M_PI)
+        *out_target_rpm_3 = (one_over_root_2 * (-rotated_target_velocity.x + rotated_target_velocity.y) - robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
-        *out_target_rpm_4 = (one_over_root_2 * (rotated_target_velocity.x + rotated_target_velocity.y) - robot_radius * corrected_target_angular_velocity / 180 * M_PI)
+        *out_target_rpm_4 = (one_over_root_2 * (rotated_target_velocity.x + rotated_target_velocity.y) - robot_radius * target_angular_velocity / 180 * M_PI)
                             / wheel_radius * 60.0f / (2.0f * M_PI) * reduction_ratio;
     }
 } // namespace m3508_control
