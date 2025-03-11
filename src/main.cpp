@@ -312,6 +312,12 @@ void register_bt_event_handlers() {
                 .build()
         );
     });
+
+    bt_communicator->add_write_event_listener("resetImu", [&](JsonDocument doc) {
+        Serial.println("command: resetImu");
+        bt_communicator->remote_print("command: resetImu");
+        mpu6050_controller->reset_yaw();
+    });
 }
 
 void register_can_event_handlers() {
