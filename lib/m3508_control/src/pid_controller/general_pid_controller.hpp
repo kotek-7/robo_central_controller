@@ -17,7 +17,7 @@ namespace m3508_control::pid_controller {
         void set_ki(const float ki) { this->ki = ki; };
         void set_kd(const float kd) { this->kd = kd; };
         void set_feedback_value(const float feedback_value) { this->feedback_value = feedback_value; };
-        void set_target_value(const float target_value) {};
+        void set_target_value(const float target_value) { this->target_value = target_value; };
 
         float update_output();
     private:
