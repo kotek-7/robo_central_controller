@@ -104,7 +104,7 @@ namespace m3508_control {
                  }
              )},
         }),
-        angular_velocity_pid_controller(1, 0, 0, 250, bt_printer),
+        angular_velocity_pid_controller(3, 0, 0, 250, bt_printer),
         target_velocity(Vec2(0, 0)),
         bt_json_sender(bt_json_sender),
         bt_printer(bt_printer),
