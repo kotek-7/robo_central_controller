@@ -46,7 +46,7 @@ namespace bt_communication {
         };
 
         // BLEの初期化
-        BLEDevice::init("esp32_for_BLE");
+        BLEDevice::init("超電磁タートル");
         ble_server = std::unique_ptr<BLEServer>(BLEDevice::createServer());
         ble_server->setCallbacks(new ServerCallbacks(*this));
 
