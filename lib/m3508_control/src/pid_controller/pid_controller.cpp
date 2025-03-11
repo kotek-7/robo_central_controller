@@ -38,6 +38,7 @@ namespace m3508_control::pid_controller {
         this->amp = amp;
         this->temp = temp;
         if (count % DEBUG_PRINT_INTERVAL == 0) {
+            #ifdef PID_DEBUG
             Serial.print("Feedback set: \n");
             Serial.print(
                 "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) + "mA, temp: " + String(temp) + "deg C"
@@ -47,6 +48,7 @@ namespace m3508_control::pid_controller {
             bt_printer.remote_print(
                 "angle: " + String(angle) + "deg, rpm: " + String(rpm) + "rpm, amp: " + String(amp) + "mA, temp: " + String(temp) + "deg C"
             );
+            #endif
         }
     }
 
