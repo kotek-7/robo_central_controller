@@ -30,13 +30,13 @@ namespace m3508_control::pid_controller
 
         const float error = target_value - feedback_value;
 
-        float proportional = kp * error;
+        const float proportional = kp * error;
         integral += ki * error * dt;
-        float derivative = kd * (error - previous_error) / dt;
+        const float derivative = kd * (error - previous_error) / dt;
         previous_error = error;
 
-        float raw_output = proportional + integral + derivative;
-        float clamped_output = std::clamp(raw_output, -clamping_output, clamping_output);
+        const float raw_output = proportional + integral + derivative;
+        const float clamped_output = std::clamp(raw_output, -clamping_output, clamping_output);
         if (raw_output != clamped_output && (raw_output * error > 0)) {
             integral = 0;
         }
