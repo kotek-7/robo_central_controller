@@ -106,13 +106,13 @@ namespace m3508_control {
         }),
         angular_velocity_pid_controller(1, 0, 0, 250, bt_printer),
         target_velocity(Vec2(0, 0)),
-        command_currents{0, 0, 0, 0},
         bt_json_sender(bt_json_sender),
         bt_printer(bt_printer),
         can_transmitter(can_transmitter) {}
 
     void M3508Controller::send_currents() {
         update_target_rpms();
+        int32_t command_currents[4];
         for (auto &pid_controller : pid_controllers) {
             command_currents[static_cast<uint8_t>(pid_controller.first) - 1] = pid_controller.second.update_output();
         }

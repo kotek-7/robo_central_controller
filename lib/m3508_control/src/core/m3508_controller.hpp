@@ -76,9 +76,6 @@ namespace m3508_control {
         /// @brief センサから読み取られた機体の現在のyaw角度[deg]
         float yaw;
 
-        /// @brief 送信する電流値(mA)のバッファ
-        int32_t command_currents[4];
-
         /// @brief 汎用Bluetooth通信用インスタンス
         const bt_communication::BtJsonSender &bt_json_sender;
         /// @brief Bluetoothモニタにログを送るためのインスタンス
