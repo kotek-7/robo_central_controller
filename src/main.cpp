@@ -318,6 +318,17 @@ void register_bt_event_handlers() {
         bt_communicator->remote_print("command: resetImu");
         mpu6050_controller->reset_yaw();
     });
+
+    bt_communicator->add_write_event_listener("ryuguLightUp", [&](JsonDocument doc) {
+        Serial.println("command: ryuguLightUp");
+        bt_communicator->remote_print("command: ryuguLightUp");
+        can_communicator->transmit(
+            can::CanTxMessageBuilder()
+                .set_dest(can::CanDest::servo_cone)
+                .set_command(0x20)
+                .build()
+        );
+    });
 }
 
 void register_can_event_handlers() {
