@@ -10,6 +10,7 @@ namespace mpu6050_control {
         bt_json_sender(bt_json_sender) {}
 
     void Mpu6050Controller::setup() {
+        mpu.reset();
         Wire.begin();
         Wire.setClock(400000);
         mpu.initialize();
