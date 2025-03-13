@@ -49,6 +49,7 @@ namespace bt_communication {
         BLEDevice::init("超電磁タートル");
         ble_server = std::unique_ptr<BLEServer>(BLEDevice::createServer());
         ble_server->setCallbacks(new ServerCallbacks(*this));
+        BLEDevice::setPower(ESP_PWR_LVL_P9);
 
         // Serviceを作成
         BLEService *p_service = ble_server->createService(SERVICE_UUID);
